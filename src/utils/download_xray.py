@@ -1,6 +1,7 @@
 # Download the 56 zip files in Images_png in batches
-import urllib
+import urllib.request as urllib
 import os
+import shutil
 
 def download_nih_chest(out_path):
     """ Dowmload over 100,000 chest x-ray images from NIH. Script modified to use Python3.
@@ -28,6 +29,9 @@ def download_nih_chest(out_path):
     for idx, link in enumerate(links):
         fn = os.path.join(out_path, 'images_%02d.tar.gz' % (idx+1))
         print('downloading', fn, '...')
-        urllib.request.urlretrieve(link, fn)  # download the zip file
+        urllib.urlretrieve(link, fn)  # download the zip file
+        print('unzipping ...')
+        shutil.unpack_archive(fn, out_path)
+
     print("Download complete. Please check the checksums")
 
