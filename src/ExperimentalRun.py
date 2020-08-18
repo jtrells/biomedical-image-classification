@@ -74,7 +74,7 @@ class ExperimentalRun():
         
         kwargs = {'num_workers': self.config.num_workers, 'pin_memory': True} if torch.cuda.is_available() else {}
         train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, shuffle=True, **kwargs)
-        valid_loader = DataLoader(validation_dataset, batch_size=self.config.test_batch_size, shuffle=True, **kwargs)
+        valid_loader = DataLoader(validation_dataset, batch_size=self.config.test_batch_size, shuffle=False, **kwargs)
         
         early_stopping = EarlyStopping(patience=self.config.patience,
                                        verbose=True,
