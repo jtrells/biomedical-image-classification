@@ -39,11 +39,13 @@ def main():
     parser.add_argument('--pretrained', type=int, default='1', help='pretrain on imagenet')
     parser.add_argument('--infra', type=str, default='', help='Description of the infrastructure used for training')
     parser.add_argument('--notes', type=str, default='', help='Any particular note about the run')
+    parser.add_argument('--augmentation', type=int, default='0', help='Use data augmentation')
 
     args = parser.parse_args()
 
     provider = MicroscopyTrainDataLoader(args.csv_path, seed=args.seed)
     model = experiment(args.experiment, args.architecture, num_classes=args.num_output_classes, pretrained= (args.pretrained == 1))
+    args.augmentation = (args.augmentation == 1)
     print(model)
     run = ExperimentalRun(model, provider, args, notes=args.notes, tags=['clef', 'microscopy'])
     run.train()

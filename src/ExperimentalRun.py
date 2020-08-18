@@ -69,7 +69,7 @@ class ExperimentalRun():
         return model.to(device)
     
     def train(self):
-        train_dataset = self.provider.get_train_dataset()
+        train_dataset = self.provider.get_train_dataset(augmentation=self.config.augmentation)
         validation_dataset = self.provider.get_val_dataset()
         
         kwargs = {'num_workers': self.config.num_workers, 'pin_memory': True} if torch.cuda.is_available() else {}

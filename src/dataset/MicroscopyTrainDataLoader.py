@@ -1,5 +1,6 @@
 # +
 import random
+import torch
 from torchvision import transforms
 from .MicroscopyDataset import MicroscopyDataset
 
@@ -8,18 +9,29 @@ class MicroscopyTrainDataLoader():
     def __init__(self, csv_path, seed=443):
         self.csv_path = csv_path
 
-    def get_train_dataset(self, normalized=True):
+    def get_train_dataset(self, normalized=True, augmentation=False):
         return self._get_dataset('train', normalized=normalized)
 
     def get_val_dataset(self, normalized=True):
-        return self._get_dataset('validation', normalized=normalized)
+        return self._get_dataset('validation', normalized=normalized, augmentation=False)
 
-    def _get_dataset(self, image_set, normalized=True):
-        transform_list = [
-            transforms.ToPILImage(),
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-        ]
+    def _get_dataset(self, image_set, normalized=True, augmentation=False):
+
+        if augmentation:
+            transform_list = [
+                transforms.ToPILImage(),
+                transforms.Resize((256, 256)),
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomRotation(15),
+                transforms.CenterCrop((224,224)),
+                transforms.ToTensor(),
+            ]
+        else:
+            transform_list = [
+                transforms.ToPILImage(),
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+            ]
 
         if normalized:
             transform_list.append(transforms.Normalize(
@@ -27,3 +39,5 @@ class MicroscopyTrainDataLoader():
 
         transform = transforms.Compose(transform_list)
         return MicroscopyDataset(self.csv_path, image_set=image_set, transform=transform)
+
+# transforms.Lambda(lambda x: transforms.Resize(256)(x) if min(x.size) < 256 else x),
