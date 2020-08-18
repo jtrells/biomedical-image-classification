@@ -9,6 +9,12 @@ from torch.utils.data import DataLoader
 from EarlyStopping import EarlyStopping
 from tqdm import tqdm
 
+def count_trainable_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+def count_total_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 class ExperimentalRun():
     def __init__(self, model, dataset_provider, config, notes="", tags=[]):
         self.config = config
@@ -56,6 +62,10 @@ class ExperimentalRun():
         if torch.cuda.device_count() > 1:
             print("using", torch.cuda.device_count(), "GPUs!")
             model = nn.DataParallel(model)
+        wandb.log({
+            'trainable_params': count_trainable_parameters(model),
+            'params': count_total_parameters(model),
+        })
         return model.to(device)
     
     def train(self):
