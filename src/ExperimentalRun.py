@@ -71,11 +71,30 @@ class ExperimentalRun():
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
         criterion = nn.CrossEntropyLoss()
         
+        train_losses = []
+        train_accs = []
+        val_losses = []
+        val_accs = []
         for epoch in range(1, self.config.epochs + 1):
-            self.train_step(self.model, self.device, train_loader, optimizer, criterion, epoch, self.config.epochs)
-            stop_execution = self.test_step(self.model, self.device, valid_loader, criterion, early_stopping)
+            train_loss, train_acc = self.train_step(self.model, self.device, train_loader, optimizer, criterion, epoch, self.config.epochs)
+            val_loss, val_acc, stop_execution = self.test_step(self.model, self.device, valid_loader, criterion, epoch, early_stopping)
+
+            train_losses.append(train_loss)
+            train_accs.append(train_acc)
+            val_losses.append(val_loss)
+            val_accs.append(val_acc)
+
             if stop_execution:
                 break
+
+        best_val_epoch = early_stopping.get_best_val_epoch()
+        wandb.log({
+                "Best Val Loss": val_losses[best_val_epoch-1],
+                "Best Val Acc": val_accs[best_val_epoch-1],
+                "Best Train Loss ": train_losses[best_val_epoch-1],
+                "Best Train Acc": train_accs[best_val_epoch-1],
+                "Best Epoch": best_val_epoch,
+            })
         
         saved_model_path = os.path.join(self.run_path, "weights")
         # avoid saving the weights per gpu module for more flexibility during loading
@@ -121,9 +140,9 @@ class ExperimentalRun():
                 "Train Loss": average_loss,
                 "Train Acc": epoch_acc
             })
-            return average_loss           
+            return average_loss, epoch_acc        
             
-    def test_step(self, model, device, test_loader, criterion, early_stopping):
+    def test_step(self, model, device, test_loader, criterion, epoch, early_stopping):
         model.eval()
 
         valid_loss, valid_n_iter = 0, 0
@@ -152,7 +171,7 @@ class ExperimentalRun():
             vbar.set_postfix(loss=average_loss, accuracy=float(epoch_acc))
             
             stop_execution = False
-            early_stopping(average_loss, model)
+            early_stopping(average_loss, model, epoch)
             if early_stopping.early_stop:
                 stop_execution = True
 
@@ -160,8 +179,9 @@ class ExperimentalRun():
                 "Test Accuracy": epoch_acc,
                 "Test Loss": average_loss})
 
-            return stop_execution
+            return average_loss, epoch_acc, stop_execution
         
+
     def _validate_config(self):
         attrs = [
             'batch_size',         # Training batch size 
@@ -173,8 +193,8 @@ class ExperimentalRun():
             'patience',           # epochs to wait before early stopping
             'num_workers',        # number of workers for data loading
             'num_output_classes', # output class for classification problem
-            'dataset_path',       # path to input images
-            'labels_path',        # path to CSV file with image labels (not using folder labels)
+            # 'dataset_path',       # path to input images
+            # 'labels_path',        # path to CSV file with image labels (not using folder labels)
             'out_dir',            # where to save any output file
             'project_name',       # project name on wandb
             'architecture',       # network architecture
