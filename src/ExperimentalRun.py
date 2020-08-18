@@ -3,6 +3,7 @@ import torch
 import wandb
 import torch.nn as nn
 import sys
+import numpy as np
 
 from torch.utils.data import DataLoader
 from EarlyStopping import EarlyStopping
@@ -131,7 +132,7 @@ class ExperimentalRun():
                 
                 tbar.update(1)
               
-            epoch_acc = 100 * correct / total
+            epoch_acc = 100 * torch.true_divide(correct, total)
             average_loss = train_loss / n_iter
             
             tbar.set_postfix(loss=average_loss, accuracy=float(epoch_acc))
@@ -165,7 +166,7 @@ class ExperimentalRun():
                 
                 vbar.update(1)
 
-            epoch_acc = 100 * correct / total
+            epoch_acc = 100 * torch.true_divide(correct, total)
             average_loss = valid_loss / valid_n_iter
             
             vbar.set_postfix(loss=average_loss, accuracy=float(epoch_acc))
