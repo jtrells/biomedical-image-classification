@@ -13,7 +13,7 @@ def count_trainable_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def count_total_parameters(model):
-    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return sum(p.numel() for p in model.parameters())
 
 class ExperimentalRun():
     def __init__(self, model, dataset_provider, config, notes="", tags=[]):
@@ -63,8 +63,8 @@ class ExperimentalRun():
             print("using", torch.cuda.device_count(), "GPUs!")
             model = nn.DataParallel(model)
         wandb.log({
-            'trainable_params': count_trainable_parameters(model),
-            'params': count_total_parameters(model),
+            'Trainable Params': count_trainable_parameters(model),
+            'Params': count_total_parameters(model),
         })
         return model.to(device)
     
