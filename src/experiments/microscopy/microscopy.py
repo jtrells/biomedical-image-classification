@@ -26,10 +26,19 @@ def experiment(experiment_name, model_name, num_classes=4, pretrained=True):
         model = experiment1(model)
     elif experiment_name == 'whole':
         model = experiment2(model)
+    elif experiment_name == 'layer4':
+        model = experiment3(model)
+    elif experiment_name == 'layer3':
+        model = experiment4(model)
+    elif experiment_name == 'layer2':
+        model = experiment5(model)
+    elif experiment_name == 'layer1':
+        model = experiment6(model)
 
     return model
 
-
+# There should be a smarter way to set requires_grad but as I don't know how 
+# to access the layers as a dictionary, it's quite tricky. This works for now.
 def experiment1(model):
     """
     Experiment 1: Unfreeze only the last fc layer
@@ -46,5 +55,69 @@ def experiment2(model):
     Experiment 2: Fine-tune the whole layers
     """
     for param in model.parameters():
+        param.requires_grad = True
+    return model
+
+
+def experiment3(model):
+    """
+    Experiment 3: Fine-tune from the last residual block (layer 4)
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.layer4.parameters():
+        param.requires_grad = True
+    for param in model.fc.parameters():
+        param.requires_grad = True
+    return model
+
+
+def experiment4(model):
+    """
+    Experiment 4: Fine-tune from the third residual block (layer 3)
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.layer4.parameters():
+        param.requires_grad = True
+    for param in model.layer3.parameters():
+        param.requires_grad = True
+    for param in model.fc.parameters():
+        param.requires_grad = True
+    return model
+
+
+def experiment5(model):
+    """
+    Experiment 5: Fine-tune from the second residual block (layer 2)
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.layer4.parameters():
+        param.requires_grad = True
+    for param in model.layer3.parameters():
+        param.requires_grad = True
+    for param in model.layer2.parameters():
+        param.requires_grad = True
+    for param in model.fc.parameters():
+        param.requires_grad = True
+    return model
+
+
+def experiment6(model):
+    """
+    Experiment 6: Fine-tune from the first residual block (layer 1)
+    """
+    for param in model.parameters():
+        param.requires_grad = False
+    for param in model.layer4.parameters():
+        param.requires_grad = True
+    for param in model.layer3.parameters():
+        param.requires_grad = True
+    for param in model.layer2.parameters():
+        param.requires_grad = True
+    for param in model.layer1.parameters():
+        param.requires_grad = True
+    for param in model.fc.parameters():
         param.requires_grad = True
     return model
