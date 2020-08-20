@@ -26,14 +26,18 @@ def experiment(experiment_name, model_name, num_classes=4, pretrained=True):
         model = experiment1(model)
     elif experiment_name == 'whole':
         model = experiment2(model)
-    elif experiment_name == 'layer4':
-        model = experiment3(model)
-    elif experiment_name == 'layer3':
-        model = experiment4(model)
-    elif experiment_name == 'layer2':
-        model = experiment5(model)
-    elif experiment_name == 'layer1':
-        model = experiment6(model)
+    elif 'layer4' in experiment_name:
+        name, i = experiment_name.split('-')
+        model = experiment3(model, int(i))
+    elif 'layer3' in experiment_name:
+        name, i = experiment_name.split('-')
+        model = experiment4(model, int(i))
+    elif 'layer2' in experiment_name:
+        name, i = experiment_name.split('-')
+        model = experiment5(model, int(i))
+    elif 'layer1' in experiment_name:
+        name, i = experiment_name.split('-')
+        model = experiment6(model, int(i))
 
     return model
 
@@ -59,20 +63,28 @@ def experiment2(model):
     return model
 
 
-def experiment3(model):
+def experiment3(model, i):
     """
     Experiment 3: Fine-tune from the last residual block (layer 4)
     """
+    if len(model.layer4) <= i:
+        raise Exception("Block does not have {0} sublayers".format(i-1))
+    
     for param in model.parameters():
         param.requires_grad = False
-    for param in model.layer4.parameters():
-        param.requires_grad = True
+    
+    layers = model.layer4
+    for idx in range(len(layers) - i):
+        for p in layers[-(idx+1)].parameters():
+            p.requires_grad = True
+#     for param in model.layer4.parameters():
+#         param.requires_grad = True
     for param in model.fc.parameters():
         param.requires_grad = True
     return model
 
 
-def experiment4(model):
+def experiment4(model, i):
     """
     Experiment 4: Fine-tune from the third residual block (layer 3)
     """
@@ -80,14 +92,20 @@ def experiment4(model):
         param.requires_grad = False
     for param in model.layer4.parameters():
         param.requires_grad = True
-    for param in model.layer3.parameters():
-        param.requires_grad = True
+        
+    layers = model.layer3
+    for idx in range(len(layers) - i):
+        for p in layers[-(idx+1)].parameters():
+            p.requires_grad = True
+#     for param in model.layer3.parameters():
+#         param.requires_grad = True
+    
     for param in model.fc.parameters():
         param.requires_grad = True
     return model
 
 
-def experiment5(model):
+def experiment5(model, i):
     """
     Experiment 5: Fine-tune from the second residual block (layer 2)
     """
@@ -97,14 +115,18 @@ def experiment5(model):
         param.requires_grad = True
     for param in model.layer3.parameters():
         param.requires_grad = True
-    for param in model.layer2.parameters():
-        param.requires_grad = True
+    layers = model.layer2
+    for idx in range(len(layers) - i):
+        for p in layers[-(idx+1)].parameters():
+            p.requires_grad = True
+#     for param in model.layer2.parameters():
+#         param.requires_grad = True
     for param in model.fc.parameters():
         param.requires_grad = True
     return model
 
 
-def experiment6(model):
+def experiment6(model, i):
     """
     Experiment 6: Fine-tune from the first residual block (layer 1)
     """
@@ -116,8 +138,12 @@ def experiment6(model):
         param.requires_grad = True
     for param in model.layer2.parameters():
         param.requires_grad = True
-    for param in model.layer1.parameters():
-        param.requires_grad = True
+    layers = model.layer1
+    for idx in range(len(layers) - i):
+        for p in layers[-(idx+1)].parameters():
+            p.requires_grad = True
+#     for param in model.layer1.parameters():
+#         param.requires_grad = True
     for param in model.fc.parameters():
         param.requires_grad = True
     return model

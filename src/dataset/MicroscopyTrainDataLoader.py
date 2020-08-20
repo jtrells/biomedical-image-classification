@@ -14,6 +14,9 @@ class MicroscopyTrainDataLoader():
 
     def get_val_dataset(self, normalized=True):
         return self._get_dataset('validation', normalized=normalized, augmentation=False)
+    
+    def get_test_dataset(self, normalized=True):
+        return self._get_dataset('test', normalized=normalized, augmentation=False)
 
     def _get_dataset(self, image_set, normalized=True, augmentation=False):
 
