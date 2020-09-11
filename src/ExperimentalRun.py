@@ -6,6 +6,8 @@ import sys
 import numpy as np
 
 from torch.utils.data import DataLoader
+from torch.utils.data.sampler import WeightedRandomSampler
+from sklearn.utils import class_weight
 from EarlyStopping import EarlyStopping
 from tqdm import tqdm
 
@@ -33,6 +35,7 @@ class ExperimentalRun():
           project=self.config.project_name,
           notes=notes,
           tags=tags,
+          reinit=True
         )
         wandb.run.save()
         wandb.config.update(self.config)
@@ -73,14 +76,38 @@ class ExperimentalRun():
         validation_dataset = self.provider.get_val_dataset()
         
         kwargs = {'num_workers': self.config.num_workers, 'pin_memory': True} if torch.cuda.is_available() else {}
-        train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, shuffle=True, **kwargs)
+        if not self.config.weight_sampler:
+            train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, shuffle=True, **kwargs)
+        else:
+            # TODO: forcing modality to be the label field. need to generalize this later
+            train_labels = train_dataset.codec.transform(train_dataset.df['MODALITY'])
+            _, train_class_counts = np.unique(train_labels, return_counts=True)
+            # https://github.com/pytorch/tutorials/pull/236/files/37bfb4d2e063b538cb875043393cc596b195ebae
+            weights = 1. / train_class_counts
+            samples_weights = torch.from_numpy(weights[train_labels])
+            sampler = WeightedRandomSampler(
+                weights=samples_weights,
+                num_samples=len(samples_weights),
+                replacement=True)
+            # sampler and shuffle are mutually exclusive
+            train_loader = DataLoader(train_dataset, batch_size=self.config.batch_size, sampler=sampler, **kwargs)
+            
         valid_loader = DataLoader(validation_dataset, batch_size=self.config.test_batch_size, shuffle=False, **kwargs)
         
         early_stopping = EarlyStopping(patience=self.config.patience,
                                        verbose=True,
                                        path=os.path.join(self.run_path, 'checkpoint.pt'))
         optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
-        criterion = nn.CrossEntropyLoss()
+        
+        if self.config.weight_loss:
+            train_labels = train_dataset.codec.transform(train_dataset.df['MODALITY'])
+            class_weights = class_weight.compute_class_weight('balanced',
+                                                 np.unique(train_labels),
+                                                 train_labels)
+            class_weights = torch.Tensor(class_weights).to(self.device)
+            criterion = nn.CrossEntropyLoss(weight=class_weights)
+        else:
+            criterion = nn.CrossEntropyLoss()
         
         train_losses = []
         train_accs = []
@@ -114,6 +141,7 @@ class ExperimentalRun():
             torch.save(self.model.module.state_dict(), saved_model_path)
         else:
             torch.save(self.model.state_dict(), saved_model_path)
+        wandb.join()
 
     def train_step(self, model, device, train_loader, optimizer, criterion, epoch, total_epochs):
         model.train()

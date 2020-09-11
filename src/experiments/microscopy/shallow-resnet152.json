@@ -1,0 +1,202 @@
+{
+    "resnet152.layer4-2": {
+        "id": "woven-meadow-477",
+        "layers": [3, 8, 36, 3]
+    },
+    "resnet152.layer4-1": {
+        "id": "silvery-music-474",
+        "layers": [3, 8, 36, 2]
+    },
+    "resnet152.layer4-0": {
+        "id": "rose-wind-472",
+        "layers": [3, 8, 36, 1]
+    },
+    "resnet152.layer3-35": {
+        "id": "woven-hill-469",
+        "layers": [3, 8, 36, 0]
+    },
+    "resnet152.layer3-34": {
+        "id": "leafy-microwave-466",
+        "layers": [3, 8, 35, 0]
+    },
+    "resnet152.layer3-33": {
+        "id": "deep-frost-463",
+        "layers": [3, 8, 34, 0]
+    },
+    "resnet152.layer3-32": {
+        "id": "fallen-butterfly-460",
+        "layers": [3, 8, 33, 0]
+    },
+    "resnet152.layer3-31": {
+        "id": "swift-sound-456",
+        "layers": [3, 8, 32, 0]
+    },
+    "resnet152.layer3-30": {
+        "id": "dazzling-shape-453",
+        "layers": [3, 8, 31, 0]
+    },
+    "resnet152.layer3-29": {
+        "id": "gallant-puddle-449",
+        "layers": [3, 8, 30, 0]
+    },
+    "resnet152.layer3-28": {
+        "id": "crimson-vortex-445",
+        "layers": [3, 8, 29, 0]
+    },
+    "resnet152.layer3-27": {
+        "id": "charmed-serenity-441",
+        "layers": [3, 8, 28, 0]
+    },
+    "resnet152.layer3-26": {
+        "id": "different-durian-440",
+        "layers": [3, 8, 27, 0]
+    },    
+    "resnet152.layer3-25": {
+        "id": "sunny-dream-439",
+        "layers": [3, 8, 26, 0]
+    },
+    "resnet152.layer3-24": {
+        "id": "whole-hill-438",
+        "layers": [3, 8, 25, 0]
+    },
+    "resnet152.layer3-23": {
+        "id": "wild-bush-437",
+        "layers": [3, 8, 24, 0]
+    },
+    "resnet152.layer3-22": {
+        "id": "northern-fog-436",
+        "layers": [3, 8, 23, 0]
+    },
+    "resnet152.layer3-21": {
+        "id": "stellar-glitter-435",
+        "layers": [3, 8, 22, 0]
+    },
+    "resnet152.layer3-20": {
+        "id": "silver-universe-434",
+        "layers": [3, 8, 21, 0]
+    },
+    "resnet152.layer3-19": {
+        "id": "woven-cloud-433",
+        "layers": [3, 8, 20, 0]
+    },
+    "resnet152.layer3-18": {
+        "id": "scarlet-sky-432",
+        "layers": [3, 8, 19, 0]
+    },
+    "resnet152.layer3-17": {
+        "id": "blooming-music-431",
+        "layers": [3, 8, 18, 0]
+    },
+    "resnet152.layer3-16": {
+        "id": "woven-terrain-430",
+        "layers": [3, 8, 17, 0]
+    },
+    "resnet152.layer3-15": {
+        "id": "logical-shadow-429",
+        "layers": [3, 8, 16, 0]
+    },
+    "resnet152.layer3-14": {
+        "id": "ethereal-bee-428",
+        "layers": [3, 8, 15, 0]
+    },
+    "resnet152.layer3-13": {
+        "id": "snowy-hill-427",
+        "layers": [3, 8, 14, 0]
+    },
+    "resnet152.layer3-12": {
+        "id": "hardy-totem-426",
+        "layers": [3, 8, 13, 0]
+    },
+    "resnet152.layer3-11": {
+        "id": "toasty-glitter-425",
+        "layers": [3, 8, 12, 0]
+    },
+    "resnet152.layer3-10": {
+        "id": "warm-dew-424",
+        "layers": [3, 8, 11, 0]
+    },
+    "resnet152.layer3-9": {
+        "id": "glamorous-water-423",
+        "layers": [3, 8, 10, 0]
+    },
+    "resnet152.layer3-8": {
+        "id": "swept-river-422",
+        "layers": [3, 8, 9, 0]
+    },
+    "resnet152.layer3-7": {
+        "id": "serene-darkness-421",
+        "layers": [3, 8, 8, 0]
+    },
+    "resnet152.layer3-6": {
+        "id": "resilient-violet-420",
+        "layers": [3, 8, 7, 0]
+    },
+    "resnet152.layer3-5": {
+        "id": "fearless-water-419",
+        "layers": [3, 8, 6, 0]
+    },
+    "resnet152.layer3-4": {
+        "id": "dulcet-waterfall-418",
+        "layers": [3, 8, 5, 0]
+    },
+    "resnet152.layer3-3": {
+        "id": "worthy-cosmos-417",
+        "layers": [3, 8, 4, 0]
+    },
+    "resnet152.layer3-2": {
+        "id": "clear-bush-416",
+        "layers": [3, 8, 3, 0]
+    },
+    "resnet152.layer3-1": {
+        "id": "super-lake-415",
+        "layers": [3, 8, 2, 0]
+    },
+    "resnet152.layer3-0": {
+        "id": "lilac-night-414",
+        "layers": [3, 8, 1, 0]
+    },
+    "resnet152.layer2-7": {
+        "id": "usual-paper-413",
+        "layers": [3, 8, 0, 0]
+    },
+    "resnet152.layer2-6": {
+        "id": "hopeful-spaceship-412",
+        "layers": [3, 7, 0, 0]
+    },
+    "resnet152.layer2-5": {
+        "id": "fallen-fire-411",
+        "layers": [3, 6, 0, 0]
+    },
+    "resnet152.layer2-4": {
+        "id": "youthful-feather-410",
+        "layers": [3, 5, 0, 0]
+    },
+    "resnet152.layer2-3": {
+        "id": "toasty-serenity-409",
+        "layers": [3, 4, 0, 0]
+    },
+    "resnet152.layer2-2": {
+        "id": "astral-bee-408",
+        "layers": [3, 3, 0, 0]
+    },
+    "resnet152.layer2-1": {
+        "id": "curious-leaf-407",
+        "layers": [3, 2, 0, 0]
+    },
+    "resnet152.layer2-0": {
+        "id": "peach-paper-406",
+        "layers": [3, 1, 0, 0]
+    },
+    "resnet152.layer1-2": {
+        "id": "quiet-dawn-405",
+        "layers": [3, 0, 0, 0]
+    },
+    "resnet152.layer1-1": {
+        "id": "happy-bird-404",
+        "layers": [2, 0, 0, 0]
+    },
+    "resnet152.layer1-0": {
+        "id": "polar-snowball-403",
+        "layers": [1, 0, 0, 0]
+    }
+}

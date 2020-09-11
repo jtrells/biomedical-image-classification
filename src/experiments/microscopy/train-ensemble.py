@@ -20,7 +20,60 @@ from torchvision import models
 from dataset.MicroscopyTrainDataLoader import MicroscopyTrainDataLoader
 from ExperimentalRun import ExperimentalRun
 from microscopy import experiment, get_model
+import json
+import torch
 
+import torch.nn.functional as F
+
+class MyEnsemble(nn.Module):
+    def __init__(self, model1, model2, model3, model4, model5, model6, nb_classes=4):
+        super(MyEnsemble, self).__init__()
+        self.model1 = model1
+        self.model2 = model2
+        self.model3 = model3
+        self.model4 = model4
+        self.model5 = model5
+        self.model6 = model6
+        # Remove last linear layer
+        self.model1.fc = nn.Identity()
+        self.model2.fc = nn.Identity()
+        self.model3.fc = nn.Identity()
+        self.model4.fc = nn.Identity()
+        self.model5.fc = nn.Identity()
+        self.model6.fc = nn.Identity()
+        
+        # Create new classifier
+        self.classifier = nn.Linear(2048+2048+2048+1024+1024+1024, nb_classes)
+        
+    def forward(self, x):
+        x1 = self.model1(x.clone())  # clone to make sure x is not changed by inplace methods
+        x1 = x1.view(x1.size(0), -1)
+        x2 = self.model2(x)
+        x2 = x2.view(x2.size(0), -1)
+        x3 = self.model3(x)
+        x3 = x3.view(x3.size(0), -1)
+        x4 = self.model4(x)
+        x4 = x4.view(x4.size(0), -1)
+        x5 = self.model5(x)
+        x5 = x5.view(x5.size(0), -1)
+        x6 = self.model6(x)
+        x6 = x6.view(x6.size(0), -1)
+        
+        x = torch.cat((x1, x2, x3, x4, x5, x6), dim=1)
+        
+        x = self.classifier(F.relu(x))
+        return x
+
+    
+def load_shallow_model(model_id, model_dict):
+    model_name, experiment_name = model_id.split('.')
+    model = get_model(model_name, "shallow", 4, layers=model_dict[model_id]['layers'], pretrained=True)
+    
+    checkpoint = torch.load('/workspace/outputs/{0}/checkpoint.pt'.format(model_dict[model_id]['id']))
+    model.load_state_dict(checkpoint)
+    
+    return model    
+    
 def main():
     parser = argparse.ArgumentParser(description='Microscopy Classification CLEF')
     parser.add_argument('--batch-size', type=int, default=32, metavar='N', help='input batch size for training (default: 32)')
@@ -46,15 +99,29 @@ def main():
     args = parser.parse_args()
 
     provider = MicroscopyTrainDataLoader(args.csv_path, seed=args.seed)
-    if args.architecture == "efficient-net":
-        model = get_model("efficient-net", "efficient-net", num_classes=args.num_output_classes, pretrained= (args.pretrained == 1))
-    else:
-        model = experiment(args.experiment, args.architecture, num_classes=args.num_output_classes, pretrained= (args.pretrained == 1))
     args.augmentation = (args.augmentation == 1)
     args.weight_sampler = (args.weight_sampler == 1)
     args.weight_loss = (args.weight_loss == 1)
     
-    run = ExperimentalRun(model, provider, args, notes=args.notes, tags=['clef', 'microscopy'])
+    JSON_INPUT_PATH = "/workspace/src/experiments/microscopy/shallow-resnet50.json"
+    
+
+    with open(JSON_INPUT_PATH) as json_file:
+        models = json.load(json_file)
+    resnet50_4_2 = load_shallow_model('resnet50.layer4-2', models)
+    resnet50_4_1 = load_shallow_model('resnet50.layer4-1', models)
+    resnet50_4_0 = load_shallow_model('resnet50.layer4-0', models)
+    resnet50_3_5 = load_shallow_model('resnet50.layer3-5', models)
+    resnet50_3_4 = load_shallow_model('resnet50.layer3-4', models)
+    resnet50_3_3 = load_shallow_model('resnet50.layer3-3', models)
+    
+    ensemble = MyEnsemble(resnet50_4_2, resnet50_4_1, resnet50_4_0, resnet50_3_5, resnet50_3_4, resnet50_3_3)
+    for p in ensemble.parameters():
+        p.requires_grad = False
+    for p in ensemble.classifier.parameters():
+        p.requires_grad = True
+    
+    run = ExperimentalRun(ensemble, provider, args, notes=args.notes, tags=['clef', 'microscopy', 'ensemble'])
     run.train()
 
 
