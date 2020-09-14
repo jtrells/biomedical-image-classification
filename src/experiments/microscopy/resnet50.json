@@ -1,0 +1,20 @@
+{
+    "resnet50.fc": "pretty-field-220",
+    "resnet50.layer4-2": "autumn-paper-100",
+    "resnet50.layer4-1": "brisk-serenity-101",
+    "resnet50.layer4-0": "easy-terrain-102",
+    "resnet50.layer3-5": "solar-elevator-103",
+    "resnet50.layer3-4": "lilac-waterfall-104",
+    "resnet50.layer3-3": "magic-donkey-105",
+    "resnet50.layer3-2": "warm-donkey-106",
+    "resnet50.layer3-1": "dashing-flower-107",
+    "resnet50.layer3-0": "glad-music-108",
+    "resnet50.layer2-3": "fragrant-cosmos-109",
+    "resnet50.layer2-2": "fragrant-pyramid-110",
+    "resnet50.layer2-1": "azure-meadow-111",
+    "resnet50.layer2-0": "pious-cloud-112",
+    "resnet50.layer1-2": "misty-jazz-113",
+    "resnet50.layer1-1": "desert-dew-114",
+    "resnet50.layer1-0": "fancy-hill-115",
+    "resnet50.whole": "devoted-valley-99"
+}

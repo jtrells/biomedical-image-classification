@@ -1,0 +1,66 @@
+{
+    "resnet34.layer4-2": {
+        "id": "solar-shadow-315",
+        "layers": [3, 4, 6, 3]
+    },
+    "resnet34.layer4-1": {
+        "id": "rare-wind-314",
+        "layers": [3, 4, 6, 2]
+    },
+    "resnet34.layer4-0": {
+        "id": "clear-yogurt-313",
+        "layers": [3, 4, 6, 1]
+    },
+    "resnet34.layer3-5": {
+        "id": "crimson-water-311",
+        "layers": [3, 4, 6, 0]
+    },
+    "resnet34.layer3-4": {
+        "id": "worthy-snowball-310",
+        "layers": [3, 4, 5, 0]
+    },
+    "resnet34.layer3-3": {
+        "id": "effortless-dew-308",
+        "layers": [3, 4, 4, 0]
+    },
+    "resnet34.layer3-2": {
+        "id": "peach-shape-307",
+        "layers": [3, 4, 3, 0]
+    },
+    "resnet34.layer3-1": {
+        "id": "expert-resonance-305",
+        "layers": [3, 4, 2, 0]
+    },
+    "resnet34.layer3-0": {
+        "id": "crimson-pyramid-303",
+        "layers": [3, 4, 1, 0]
+    },
+    "resnet34.layer2-3": {
+        "id": "graceful-shape-302",
+        "layers": [3, 4, 0, 0]
+    },
+    "resnet34.layer2-2": {
+        "id": "crisp-yogurt-300",
+        "layers": [3, 3, 0, 0]
+    },
+    "resnet34.layer2-1": {
+        "id": "confused-cosmos-299",
+        "layers": [3, 2, 0, 0]
+    },
+    "resnet34.layer2-0": {
+        "id": "apricot-gorge-297",
+        "layers": [3, 1, 0, 0]
+    },
+    "resnet34.layer1-2": {
+        "id": "fast-sea-296",
+        "layers": [3, 0, 0, 0]
+    },
+    "resnet34.layer1-1": {
+        "id": "whole-rain-294",
+        "layers": [2, 0, 0, 0]
+    },
+    "resnet34.layer1-0": {
+        "id": "deft-cloud-293",
+        "layers": [1, 0, 0, 0]
+    }
+}

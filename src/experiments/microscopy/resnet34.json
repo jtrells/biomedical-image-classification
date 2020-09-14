@@ -1,0 +1,20 @@
+{
+    "resnet34.fc": "bright-brook-219",
+    "resnet34.layer4-2": "copper-night-128",
+    "resnet34.layer4-1": "still-wind-127",
+    "resnet34.layer4-0": "copper-forest-126",
+    "resnet34.layer3-5": "silver-plant-134",
+    "resnet34.layer3-4": "copper-energy-133",
+    "resnet34.layer3-3": "breezy-elevator-132",
+    "resnet34.layer3-2": "chocolate-pine-131",
+    "resnet34.layer3-1": "dainty-smoke-130",
+    "resnet34.layer3-0": "absurd-serenity-129",
+    "resnet34.layer2-3": "effortless-microwave-138",
+    "resnet34.layer2-2": "kind-energy-137",
+    "resnet34.layer2-1": "resilient-morning-136",
+    "resnet34.layer2-0": "fragrant-night-135",
+    "resnet34.layer1-2": "wandering-field-141",
+    "resnet34.layer1-1": "wild-deluge-140",
+    "resnet34.layer1-0": "curious-surf-139",
+    "resnet34.whole": "playful-mountain-142"
+}

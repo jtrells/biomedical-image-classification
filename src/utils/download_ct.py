@@ -1,4 +1,4 @@
-import urllib
+import urllib.request as urllib
 import os
 import shutil
 
@@ -74,12 +74,12 @@ def download_nih_ct(out_path):
         'https://nihcc.box.com/shared/static/kqg4peb9j53ljhrxe3l3zrj4ac6xogif.zip'
     ]
 
-md5_link = 'https://nihcc.box.com/shared/static/q0f8gy79q2spw96hs6o4jjjfsrg17t55.txt'
-urllib.urlretrieve(md5_link, "MD5_checksums.txt")  # download the MD5 checksum file
-for idx, link in enumerate(links):
-    fn = os.path.join(out_path, 'Images_png_%02d.zip' % (idx+1))
-    print 'downloading', fn, '...'
-    urllib.urlretrieve(link, fn)
-    print('unzipping ...')
-    shutil.unpack_archive(fn, out_path)
-print "Download complete. Please check the MD5 checksums"
+    md5_link = 'https://nihcc.box.com/shared/static/q0f8gy79q2spw96hs6o4jjjfsrg17t55.txt'
+    urllib.urlretrieve(md5_link, "MD5_checksums.txt")  # download the MD5 checksum file
+    for idx, link in enumerate(links):
+        fn = os.path.join(out_path, 'Images_png_%02d.zip' % (idx+1))
+        print('downloading', fn, '...')
+        urllib.urlretrieve(link, fn)
+        print('unzipping ...')
+        shutil.unpack_archive(fn, out_path)
+    print("Download complete. Please check the MD5 checksums")

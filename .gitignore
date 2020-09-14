@@ -1,2 +1,5 @@
 ImageCLEF
 .ipynb_checkpoints
+wandb
+src/__pycache__
+src/*/__pycache__
