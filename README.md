@@ -5,4 +5,4 @@ Where we evaluate different deep learning approaches for biomedical image classi
 src/experiments
 
 ## Captions
-Now on branch captions
+Now on branch captions.
