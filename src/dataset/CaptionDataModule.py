@@ -1,10 +1,14 @@
+# TODO: Not using clear_str now, just basic preprocessing from tokenizer.
+
 import pytorch_lightning as pl
 import pandas as pd
 import torch
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import LabelEncoder
-from torch.utils.data import TensorDataset, DataLoader
+from torch.utils.data import DataLoader
+from torchvision import transforms
+from .MultimodalDataset import MultimodalDataset
 
 def clean_str(string):
     """
@@ -32,54 +36,101 @@ def clean_str(string):
 
 class CaptionDataModule(pl.LightningDataModule):
     
-    def __init__(self, batch_size, data_path, vocab_size, max_input_length):
+    def __init__(self,
+                 batch_size,
+                 data_path,
+                 vocab_size,
+                 max_input_length,
+                 base_img_dir,
+                 num_workers=8):
         super().__init__()
         self.batch_size = batch_size
         self.data_path = data_path
         self.vocab_size = vocab_size
         self.max_input_length = max_input_length
+        self.base_img_dir = base_img_dir
         self.le = LabelEncoder()
+        self.tokenizer = None
+        self.num_workers = num_workers
     
     def prepare_data(self):
         self.df = pd.read_csv(self.data_path, sep='\t')
         #TODO check if I need to add the clean_str
         
     def setup(self):
-        train_df = self.df[self.df['SET']=='TRAIN']
-        val_df = self.df[self.df['SET']=='VAL']
-        test_df = self.df[self.df['SET']=='TEST']
-        
-        x0_train, y0_train = train_df['CAPTION'].values, train_df['MODALITY'].values
-        x0_val, y0_val = val_df['CAPTION'].values, val_df['MODALITY'].values
-        x0_test, y0_test = test_df['CAPTION'].values, test_df['MODALITY'].values
-                
-        tokenizer = Tokenizer(num_words=self.vocab_size, filters='!"#$%&()*+,-/:;<=>?@[\\]^_`{|}~\t\n\'')
-        tokenizer.fit_on_texts(x0_train)
-        self.word_index = tokenizer.word_index
-        self.vocab_size = len(self.word_index) + 1        
-        self.le.fit(y0_train)
-        
-        train_seqs = tokenizer.texts_to_sequences(x0_train)
-        val_seqs = tokenizer.texts_to_sequences(x0_val)
-        test_seqs = tokenizer.texts_to_sequences(x0_test)
-                
-        X_train = pad_sequences(train_seqs, maxlen=self.max_input_length, padding='pre')
-        X_val   = pad_sequences(val_seqs,   maxlen=self.max_input_length, padding='pre')
-        X_test  = pad_sequences(test_seqs,  maxlen=self.max_input_length, padding='pre')                
-    
-        
-        self.captions_train = TensorDataset(torch.LongTensor(X_train),
-                                                 torch.LongTensor(self.le.transform(y0_train)))
-        self.captions_val   = TensorDataset(torch.LongTensor(X_val),
-                                                 torch.LongTensor(self.le.transform(y0_val)))
-        self.captions_test  = TensorDataset(torch.LongTensor(X_test),
-                                                 torch.LongTensor(self.le.transform(y0_test)))          
+        train_df = self.df[self.df['SET']=='TRAIN']                
+        x0_train= train_df['CAPTION'].values
+                        
+        self.tokenizer = Tokenizer(num_words=self.vocab_size, filters='!"#$%&()*+,-/:;<=>?@[\\]^_`{|}~\t\n\'')
+        self.tokenizer.fit_on_texts(x0_train)
+        self.word_index = self.tokenizer.word_index
+        self.vocab_size = len(self.word_index) + 1                 
     
     def train_dataloader(self):
-        return DataLoader(self.captions_train, batch_size=self.batch_size, shuffle=True)
+        transform_list = [
+            transforms.ToPILImage(),
+            transforms.Resize((256, 256)),
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomRotation(15),
+            transforms.CenterCrop((224,224)),
+            transforms.ToTensor(),
+        ]
+        image_transform = transforms.Compose(transform_list)
+        
+        dataset = MultimodalDataset(
+            self.data_path,
+            self.base_img_dir,
+            'TRAIN',
+            image_transform=image_transform,
+            tokenizer=self.tokenizer,
+            label_name='MODALITY',
+            max_input_length=self.max_input_length
+        )
+        return DataLoader(dataset,
+                          batch_size=self.batch_size,
+                          shuffle=True,
+                          num_workers=self.num_workers)
     
     def val_dataloader(self):
-        return DataLoader(self.captions_val, batch_size=self.batch_size, shuffle=False)
+        transform_list = [
+            transforms.ToPILImage(),
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+        ]
+        image_transform = transforms.Compose(transform_list)
+        
+        dataset = MultimodalDataset(
+            self.data_path,
+            self.base_img_dir,
+            'VAL',
+            image_transform=image_transform,
+            tokenizer=self.tokenizer,
+            label_name='MODALITY',
+            max_input_length=self.max_input_length
+        )        
+        return DataLoader(dataset,
+                          batch_size=self.batch_size,
+                          shuffle=False,
+                          num_workers=self.num_workers)
     
     def test_dataloader(self):
-        return DataLoader(self.captions_test, batch_size=self.batch_size, shuffle=False)
+        transform_list = [
+            transforms.ToPILImage(),
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+        ]
+        image_transform = transforms.Compose(transform_list)
+        
+        dataset = MultimodalDataset(
+            self.data_path,
+            self.base_img_dir,
+            'TEST',
+            image_transform=image_transform,
+            tokenizer=self.tokenizer,
+            label_name='MODALITY',
+            max_input_length=self.max_input_length
+        )        
+        return DataLoader(dataset,
+                          batch_size=self.batch_size,
+                          shuffle=False,
+                          num_workers=self.num_workers)
