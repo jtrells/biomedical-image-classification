@@ -60,6 +60,20 @@ def load_embedding_matrix(GLOVE_DIR, embedding_size):
     return embeddings_idx
 
 
+def load_glove_matrix(GLOVE_DIR, embedding_size, vocab_size, word_index):
+    glove_dict = load_embedding_matrix(GLOVE_DIR, embedding_size)    
+    embedding_matrix = np.zeros((vocab_size, embedding_size))
+    for word, idx in word_index.items():    
+        if idx < vocab_size:
+            word_embedding = glove_dict.get(word)
+            if word_embedding is not None:
+                embedding_matrix[idx] = word_embedding
+            else:
+                embedding_matrix[idx] = np.random.randn(embedding_size)
+    
+    return embedding_matrix
+
+
 def preprocess_training_data(x_train, y_train, x_val, y_val, max_words, max_sentence_length, seed=42):
     tokenizer = Tokenizer(
         num_words=max_words, filters='!"#$%&()*+,-/:;<=>?@[\\]^_`{|}~\t\n\'')

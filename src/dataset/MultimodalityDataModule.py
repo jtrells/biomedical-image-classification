@@ -34,7 +34,7 @@ def clean_str(string):
     return string.strip().lower()
 
 
-class CaptionDataModule(pl.LightningDataModule):
+class MultimodalityDataModule(pl.LightningDataModule):
     
     def __init__(self,
                  batch_size,

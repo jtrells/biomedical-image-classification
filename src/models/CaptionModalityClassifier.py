@@ -2,11 +2,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
-from pytorch_lightning.metrics.classification import Accuracy
 import numpy as np
 
-# TODO: There is a bug in the backbone sizes when we send a batch with only one value
+import matplotlib.pyplot as plt
+from scikitplot.metrics import plot_confusion_matrix
 
+# TODO: There is a bug in the backbone sizes when we send a batch with only one value
 class CNNTextBackbone(nn.Module):
     def __init__(self,
                  max_input_length=200,
@@ -14,14 +15,12 @@ class CNNTextBackbone(nn.Module):
                  embedding_dim=300,
                  filters=100,
                  embeddings=None,
-                 num_classes=4,
-                 train_embeddings=True):
-        
+                 num_classes=4,                 
+                 train_embeddings=True):        
         super().__init__()
         self.num_classes = num_classes
         
         self.embeddings = nn.Embedding(vocab_size, embedding_dim)
-        #TODO: make default a random matrix
         self.embeddings.weight.data.copy_(torch.from_numpy(embeddings))
         self.embeddings.weight.requires_grad = train_embeddings
 
@@ -79,15 +78,16 @@ class CaptionModalityClassifier(pl.LightningModule):
                  embeddings=None,
                  num_classes=4,
                  train_embeddings=True,
+                 target_classes=None,
                  lr=1e-3):        
         super().__init__()
+        # get these hyperparameters for free on my logger
         self.save_hyperparameters('max_input_length', 'filters', 'vocab_size', 'lr')
+        self.target_classes = target_classes
+        
         if embeddings is None:
-            embeddings = np.random.rand(vocab_size, embedding_dim)
-        
+            embeddings = np.random.rand(vocab_size, embedding_dim)        
         self.num_classes = num_classes
-        self.accuracy = Accuracy(num_classes)
-        
         self.CNNText = CNNTextBackbone(max_input_length=max_input_length,
                                       vocab_size=vocab_size,
                                       embedding_dim=embedding_dim,
@@ -100,37 +100,62 @@ class CaptionModalityClassifier(pl.LightningModule):
     def forward(self, x):
         x = x.view(x.size(0), -1)
         x = self.CNNText(x)
-        x = self.fc(x)
-        # x: (batch, num_classes)
-        return x
+        x = self.fc(x)        
+        return x # x: (batch, num_classes)
     
     def training_step(self, batch, batch_idx):
         x, _, y = batch
         y_hat = self(x)
-        loss = F.cross_entropy(y_hat, y)            
-        acc = self.accuracy(y_hat, y)
-         
-        result = pl.TrainResult(loss)        
-        result.log_dict({
-            'train_loss': loss,
-            'train_acc': acc
-        }, on_epoch=True, prog_bar=True, on_step=False)
-        return result
+        loss = F.cross_entropy(y_hat, y)
+        
+        _, preds = torch.max(y_hat, dim=1)
+        acc = 100 * torch.sum(preds == y.data) / (y.shape[0] * 1.0)       
+        return {'loss': loss, 'train_acc': acc}
+    
+    def training_epoch_end(self, outputs):
+        avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+        avg_acc = torch.stack([x['train_acc'].float() for x in outputs]).mean()        
+        logs = {'train_loss': avg_loss, 'train_acc': avg_acc}
+        return {'avg_train_loss': avg_loss, 'avg_train_acc': avg_acc, 'log': logs, 'progress_bar': logs}
     
     def validation_step(self, batch, batch_idx):
         x, _, y = batch
         y_hat = self(x)
         loss = F.cross_entropy(y_hat, y)        
-        acc = self.accuracy(y_hat, y)
         
-        # TODO: There is an issue open for the behavior of EvalResult and checkpoint save
-        # https://github.com/PyTorchLightning/pytorch-lightning/issues/3291
-        result = pl.EvalResult(checkpoint_on=loss, early_stop_on=loss)
-        result.log_dict({
-            'val_loss': loss,
-            'val_acc': acc
-        }, on_epoch=True, prog_bar=True, on_step=False)        
+        _, preds = torch.max(y_hat, dim=1)
+        acc = 100 * torch.sum(preds == y.data) / (y.shape[0] * 1.0)        
+        return {'val_loss': loss, 'val_acc': acc}         
+    
+    def validation_epoch_end(self, outputs):
+        avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
+        avg_acc = torch.stack([x['val_acc'].float() for x in outputs]).mean()
+        
+        logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
+        return {'avg_val_loss': avg_loss, 'avg_val_acc': avg_acc, 'log': logs, 'progress_bar': logs}
+
+    def test_step(self, batch, batch_idx):
+        x, _, y = batch
+        y_hat = self(x)
+        
+        result = pl.EvalResult()
+        result.y_hat = y_hat
+        result.y = y
         return result
+
+    def test_epoch_end(self, outputs):        
+        y_true = outputs.y
+        _, y_pred = torch.max(outputs.y_hat, dim=1)        
+        accuracy = 100 * torch.sum(y_pred == y_true.data) / (y_true.shape[0] * 1.0)
+        print("Accuracy: " + str(accuracy.item()))
+                                
+        fig, ax = plt.subplots(figsize=(4, 4))
+        plot_confusion_matrix(y_true.cpu(), y_pred.cpu(), ax=ax)
+        self.logger.experiment.log({'confusion_matrix_test': fig}) 
+        
+        results = pl.EvalResult()
+        results.log('test_acc', accuracy)
+        return results
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
