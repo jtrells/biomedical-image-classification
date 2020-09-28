@@ -6,6 +6,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 from scikitplot.metrics import plot_confusion_matrix
+from sklearn.metrics import average_precision_score
 
 # TODO: There is a bug in the backbone sizes when we send a batch with only one value
 class CNNTextBackbone(nn.Module):
@@ -79,11 +80,13 @@ class CaptionModalityClassifier(pl.LightningModule):
                  num_classes=4,
                  train_embeddings=True,
                  target_classes=None,
-                 lr=1e-3):        
+                 lr=1e-3,
+                 is_multilabel=False):        
         super().__init__()
         # get these hyperparameters for free on my logger
         self.save_hyperparameters('max_input_length', 'filters', 'vocab_size', 'lr')
         self.target_classes = target_classes
+        self.is_multilabel = is_multilabel
         
         if embeddings is None:
             embeddings = np.random.rand(vocab_size, embedding_dim)        
@@ -96,43 +99,59 @@ class CaptionModalityClassifier(pl.LightningModule):
                                       num_classes=num_classes,
                                       train_embeddings=train_embeddings)
         self.fc = nn.Linear(filters * 3, num_classes)                
+        self.sigmoid = nn.Sigmoid() # only for multi-label
     
     def forward(self, x):
+        x = self.features(x)        
+        x = self.fc(x)
+        if self.is_multilabel:
+            x = self.sigmoid(x)
+        
+        return x # x: (batch, num_classes)
+    
+    def features(self, x):
         x = x.view(x.size(0), -1)
         x = self.CNNText(x)
-        x = self.fc(x)        
-        return x # x: (batch, num_classes)
+        
+        return x
     
     def training_step(self, batch, batch_idx):
         x, _, y = batch
         y_hat = self(x)
-        loss = F.cross_entropy(y_hat, y)
-        
-        _, preds = torch.max(y_hat, dim=1)
-        acc = 100 * torch.sum(preds == y.data) / (y.shape[0] * 1.0)       
-        return {'loss': loss, 'train_acc': acc}
+        if not self.is_multilabel:
+            loss = F.cross_entropy(y_hat, y)
+            _, preds = torch.max(y_hat, dim=1)
+            acc = 100 * torch.sum(preds == y.data) / (y.shape[0] * 1.0)       
+            return {'loss': loss, 'train_acc': acc}
+        else:
+            loss = F.binary_cross_entropy(y_hat.double(), y.double())
+            return {'loss': loss, 'y_hat': y_hat, 'y_true': y}                
     
     def training_epoch_end(self, outputs):
         avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
-        avg_acc = torch.stack([x['train_acc'].float() for x in outputs]).mean()        
-        logs = {'train_loss': avg_loss, 'train_acc': avg_acc}
-        return {'avg_train_loss': avg_loss, 'avg_train_acc': avg_acc, 'log': logs, 'progress_bar': logs}
-    
+        if not self.is_multilabel:                        
+            return self._return_epoch_end_classification("train", outputs, avg_loss)
+        else:
+            return self._return_epoch_end_multilabel("train", outputs, avg_loss)
+                
     def validation_step(self, batch, batch_idx):
         x, _, y = batch
         y_hat = self(x)
-        loss = F.cross_entropy(y_hat, y)        
-        
-        _, preds = torch.max(y_hat, dim=1)
-        acc = 100 * torch.sum(preds == y.data) / (y.shape[0] * 1.0)        
-        return {'val_loss': loss, 'val_acc': acc}         
+        if not self.is_multilabel:
+            loss = F.cross_entropy(y_hat, y)
+            _, preds = torch.max(y_hat, dim=1)
+            acc = 100 * torch.sum(preds == y.data) / (y.shape[0] * 1.0)        
+            return {'val_loss': loss, 'val_acc': acc}  
+        else:
+            loss = F.binary_cross_entropy(y_hat.double(), y.double())
+            return {'val_loss': loss, 'y_hat': y_hat, 'y_true': y}                                
     
     def validation_epoch_end(self, outputs):
         avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
-        avg_acc = torch.stack([x['val_acc'].float() for x in outputs]).mean()
-        
-        logs = {'val_loss': avg_loss, 'val_acc': avg_acc}
-        return {'avg_val_loss': avg_loss, 'avg_val_acc': avg_acc, 'log': logs, 'progress_bar': logs}
+        if not self.is_multilabel:            
+            return self._return_epoch_end_classification("val", outputs, avg_loss)
+        else:
+            return self._return_epoch_end_multilabel("val", outputs, avg_loss)
 
     def test_step(self, batch, batch_idx):
         x, _, y = batch
@@ -151,11 +170,33 @@ class CaptionModalityClassifier(pl.LightningModule):
                                 
         fig, ax = plt.subplots(figsize=(4, 4))
         plot_confusion_matrix(y_true.cpu(), y_pred.cpu(), ax=ax)
-        self.logger.experiment.log({'confusion_matrix_test': fig}) 
+        if self.logger:
+            self.logger.experiment.log({'confusion_matrix_test': fig}) 
         
         results = pl.EvalResult()
         results.log('test_acc', accuracy)
         return results
+    
+    def _return_epoch_end_classification(self, set_name, outputs, avg_loss):
+        acc_key = "{0}_acc".format(set_name)
+        loss_key = "{0}_loss".format(set_name)
+        
+        avg_acc = torch.stack([x[acc_key].float() for x in outputs]).mean()
+        logs = { loss_key: avg_loss, acc_key: avg_acc}
+        return { loss_key: avg_loss, acc_key: avg_acc, 'log': logs, 'progress_bar': logs}
+    
+    def _return_epoch_end_multilabel(self, set_name, outputs, avg_loss):
+        # double iteration because we are returning an array of predictions for multilabel
+        y_hats  = torch.stack([vec.float() for x in outputs for vec in x['y_hat']])
+        y_trues = torch.stack([vec.float() for x in outputs for vec in x['y_true']])        
+        avg_precision = average_precision_score(y_trues.cpu(), y_hats.cpu() > 0.5, average='macro')
+        
+        loss_key1 = "avg_{0}_loss".format(set_name)
+        loss_key2 = "{0}_loss".format(set_name)
+        avg_precision_key = "avg_{0}_precision".format(set_name)
+        logs = { loss_key1: avg_loss, avg_precision_key: avg_precision }
+        
+        return {loss_key2: avg_loss, avg_precision_key: avg_precision, 'log': logs, 'progress_bar': logs}
     
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)

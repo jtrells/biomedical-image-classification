@@ -1,10 +1,9 @@
 import torch
 import pandas as pd
-from pathlib import Path
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import LabelEncoder
 from skimage import io
 from skimage.color import gray2rgb
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 def fit_label_encoder(unique_labels):
     le = LabelEncoder()    
@@ -12,54 +11,43 @@ def fit_label_encoder(unique_labels):
     le.fit(unique_labels)
     return le
 
-class MultimodalDataset(torch.utils.data.Dataset):
-    def __init__(
-        self,
-        csv_data_path,
-        base_img_dir,
-        data_set,
-        image_transform=None,
-        tokenizer=None,
-        label_name='MODALITY',
-        max_input_length=300
-    ):
+class MultilabelDataset(torch.utils.data.Dataset):
+    def __init__(self,
+                 csv_data_path,
+                 base_img_dir,
+                 idx_list,
+                 tokenizer=None,
+                 image_transform=None,
+                 columns=['DMEL', 'DMFL', 'DMLI', 'DMTR'],
+                 label_name='MODALITY',
+                 max_input_length=300):
         self.base_dir = Path(base_img_dir)
         self.image_transform = image_transform
         self.tokenizer = tokenizer
+        self.columns   = columns
         self.label_name = label_name
         self.max_input_length = max_input_length
-
-        # filter the train, val or test data values
-        self.df = pd.read_csv(csv_data_path, sep='\t')
-        if type(data_set) == str:
-            self.df = self.df[self.df['SET'] == data_set]
-        else:
-            self.df = self.df[self.df['ID'].isin(data_set)]
-        self.le = fit_label_encoder(self.df['MODALITY'].unique().tolist())
         
+        self.df = pd.read_csv(csv_data_path, sep='\t')
+        self.df = self.df[self.df['ID'].isin(idx_list)]
+        self.le = fit_label_encoder(self.df['MODALITY'].unique().tolist())
+    
     def __len__(self):
         return self.df.shape[0]
     
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
-            idx = idx.tolist()                
-        
-        image = self.read_image(idx)
+            idx = idx.tolist()
         caption = self.df.iloc[idx]['CAPTION']
-        modality = self.df.iloc[idx][self.label_name]
-        label = self.le.transform([modality])
-
-        if self.image_transform:
-            image = self.image_transform(image)
+        modalities = self.df.iloc[idx][self.columns].values.astype(int)
         if self.tokenizer:
             seqs = self.tokenizer.texts_to_sequences([caption])
             padded_seqs = pad_sequences(seqs, maxlen=self.max_input_length, padding='pre')
             padded_seqs = torch.LongTensor(padded_seqs)
-#             padded_seqs = torch.Tensor(padded_seqs)
-#             padded_seqs = padded_seqs.view(padded_seqs.size(0), -1)
         
-        return (padded_seqs, image, label[0])
-    
+        # second parameter is the expected image output for a multimodal model
+        return (padded_seqs, 0, torch.LongTensor(modalities))
+
     def read_image(self, idx):
         img_path = self.base_dir / self.df.iloc[idx]['PATH']
         image = io.imread(img_path)

@@ -42,7 +42,8 @@ class MultimodalityDataModule(pl.LightningDataModule):
                  vocab_size,
                  max_input_length,
                  base_img_dir,
-                 num_workers=8):
+                 num_workers=8,
+                 seed=443):
         super().__init__()
         self.batch_size = batch_size
         self.data_path = data_path
@@ -74,6 +75,7 @@ class MultimodalityDataModule(pl.LightningDataModule):
             transforms.RandomRotation(15),
             transforms.CenterCrop((224,224)),
             transforms.ToTensor(),
+            transforms.Normalize([0.4857, 0.4740, 0.4755], [0.3648, 0.3557, 0.3669])
         ]
         image_transform = transforms.Compose(transform_list)
         
@@ -96,6 +98,7 @@ class MultimodalityDataModule(pl.LightningDataModule):
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
+            transforms.Normalize([0.4857, 0.4740, 0.4755], [0.3648, 0.3557, 0.3669])
         ]
         image_transform = transforms.Compose(transform_list)
         
@@ -118,6 +121,7 @@ class MultimodalityDataModule(pl.LightningDataModule):
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
+            transforms.Normalize([0.4857, 0.4740, 0.4755], [0.3648, 0.3557, 0.3669])
         ]
         image_transform = transforms.Compose(transform_list)
         
