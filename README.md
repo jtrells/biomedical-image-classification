@@ -17,6 +17,9 @@ ImageClef 2016 Test Set
 
 We did not include the images or the bounding boxes in this repository. For access to the dataset, please contact the [ImageCLEFmed: The Medical Task 2016 organizers](https://www.imageclef.org/2016/medical).
 
+### Create Folds for Captions
+Use the `create_microscopy_multilabel_folds.py` to create the folds for k-fold cross validation. We keep the original created file on data/microscopy_captions_multilabel_kfolds_original.csv as the skmultilearn stratifier does not allow to set a random state.
 ```python
-
+python src/utils/create_microscopy_multilabel_folds.py
 ```
+
