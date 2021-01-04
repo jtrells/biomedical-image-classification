@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from gensim.models import KeyedVectors
 
 def clean_str(string):
     """
@@ -63,16 +64,38 @@ def load_embedding_matrix(GLOVE_DIR, embedding_size):
 def load_glove_matrix(GLOVE_DIR, embedding_size, vocab_size, word_index):
     glove_dict = load_embedding_matrix(GLOVE_DIR, embedding_size)    
     embedding_matrix = np.zeros((vocab_size, embedding_size))
+    count_not_present = 0
     for word, idx in word_index.items():    
         if idx < vocab_size:
             word_embedding = glove_dict.get(word)
             if word_embedding is not None:
                 embedding_matrix[idx] = word_embedding
             else:
+                count_not_present += 1
                 embedding_matrix[idx] = np.random.randn(embedding_size)
     
+    print(f"Embedding matrix shape: {embedding_matrix.shape}, with {count_not_present} not present")
     return embedding_matrix
 
+def load_bioword_embeddings(filename):
+    return KeyedVectors.load_word2vec_format(filename, binary=True)
+
+def load_bioword_matrix(filename, vocab_size, word_index):
+    bioword_model = load_bioword_embeddings(filename)
+    embedding_size = 200
+    embedding_matrix = np.zeros((vocab_size, embedding_size))
+    
+    count_not_present = 0
+    for word, idx in word_index.items():
+        if idx < vocab_size:
+            if word not in bioword_model:    
+                count_not_present += 1
+                embedding_matrix[idx] = np.random.randn(embedding_size)
+            else:
+                embedding_matrix[idx] = bioword_model['word']
+    
+    print(f"Embedding matrix shape: {embedding_matrix.shape}, with {count_not_present} not present")
+    return embedding_matrix
 
 def preprocess_training_data(x_train, y_train, x_val, y_val, max_words, max_sentence_length, seed=42):
     tokenizer = Tokenizer(

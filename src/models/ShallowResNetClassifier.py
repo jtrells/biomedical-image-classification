@@ -19,7 +19,7 @@ model_urls = {
     'wide_resnet101_2': 'https://download.pytorch.org/models/wide_resnet101_2-32ee1156.pth',
 }
 
-class ShallowResNet(pl.LightningDataModule):
+class ShallowResNet(pl.LightningModule):
     """
     Modification on TorchVision ResNet to allow different configurations per block
     based on params. For example, [2, 2, 2, 1] is a modification of ResNet18 without
@@ -27,21 +27,19 @@ class ShallowResNet(pl.LightningDataModule):
     layer4 is disregarded.
     """
 
-    def __init__(self, name, num_classes, layers, lr=1e-3):
+    def __init__(self, name, num_classes, layers, lr=1e-3, class_weights=None):
         super().__init__()
-        self.name = name
-        self.num_classes = num_classes
-        self.layers = layers
-        self.lr = lr
         
+        self.save_hyperparameters("name", "num_classes", "layers", "lr", "class_weights")        
         self.model = self._get_shallower_model()
+        self.criterion = nn.CrossEntropyLoss(weight=torch.Tensor(self.hparams.class_weights))
 
     def _get_shallower_model(self):
-        if self.name == "resnet18" or self.name == "resnet34":
-            model = ShallowTorchResNet(BasicBlock, self.layers)
+        if self.hparams.name == "resnet18" or self.hparams.name == "resnet34":
+            model = ShallowTorchResNet(BasicBlock, self.hparams.layers)
         else:
-            model = ShallowTorchResNet(Bottleneck, self.layers)
-        imagenet_dict = load_state_dict_from_url(model_urls[self.name])
+            model = ShallowTorchResNet(Bottleneck, self.hparams.layers)
+        imagenet_dict = load_state_dict_from_url(model_urls[self.hparams.name])
 
         curr_state = model.state_dict()
         new_state = OrderedDict()
@@ -54,9 +52,9 @@ class ShallowResNet(pl.LightningDataModule):
         model.load_state_dict(new_state)
         # there is no much verification but we assume that layers
         # has on index with a value bigger than 0 and the rest can be zeros
-        if self.name == 'resnet18' or self.name == 'resnet34':
-            if 0 in self.layers:
-                zero_idx = self.layers.index(0)
+        if self.hparams.name == 'resnet18' or self.hparams.name == 'resnet34':
+            if 0 in self.hparams.layers:
+                zero_idx = self.hparams.layers.index(0)
                 if zero_idx == 3:
                     num_features = 256
                 elif zero_idx == 2:
@@ -66,8 +64,8 @@ class ShallowResNet(pl.LightningDataModule):
             else:
                 num_features = 512
         else:
-            if 0 in self.layers:
-                zero_idx = self.layers.index(0)
+            if 0 in self.hparams.layers:
+                zero_idx = self.hparams.layers.index(0)
                 if zero_idx == 3:
                     num_features = 1024
                 elif zero_idx == 2:
@@ -76,12 +74,51 @@ class ShallowResNet(pl.LightningDataModule):
                     num_features = 256
             else:
                 num_features = 2048
-        model.fc = nn.Linear(num_features, self.num_classes) 
+        model.fc = nn.Linear(num_features, self.hparams.num_classes) 
 
         for param in model.parameters():
             param.requires_grad = True
         return model
 
+    def forward(self, x):
+        return self.model(x)
+    
+    def training_step(self, batch, batch_idx):
+        _, x, y = batch
+        y_hat = self(x)
+        
+        loss = self.criterion(y_hat, y)
+        _, preds = torch.max(y_hat, dim=1)
+        return {'loss': loss, 'train_preds': preds, 'train_trues': y}
+
+    def training_epoch_end(self, outputs):
+        y_preds = torch.stack([vec.float() for x in outputs for vec in x['train_preds']])
+        y_trues = torch.stack([vec.float() for x in outputs for vec in x['train_trues']])
+        avg_loss = torch.stack([x['loss'] for x in outputs]).mean()
+
+        acc = 100 * torch.sum(y_preds == y_trues.data) / (y_trues.shape[0] * 1.0)
+        logs = { 'train_loss': avg_loss, 'train_acc': acc}
+        return { 'train_avg_loss': avg_loss, 'log': logs, 'progress_bar': logs}
+
+    def validation_step(self, batch, batch_idx):
+        _, x, y = batch
+        y_hat = self(x)
+
+        loss = self.criterion(y_hat, y)
+        _, preds = torch.max(y_hat, dim=1)
+        return {'val_loss': loss, 'val_preds': preds, 'val_trues': y}        
+        
+    def validation_epoch_end(self, outputs):        
+        y_preds = torch.stack([vec.float() for x in outputs for vec in x['val_preds']])
+        y_trues = torch.stack([vec.float() for x in outputs for vec in x['val_trues']])
+        avg_loss = torch.stack([x['val_loss'] for x in outputs]).mean()        
+
+        acc = 100 * torch.sum(y_preds == y_trues.data) / (y_trues.shape[0] * 1.0)
+        logs = { 'val_loss': avg_loss, 'val_acc': acc}
+        return { 'val_loss': avg_loss, 'log': logs, 'progress_bar': logs}
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)    
 
 
 

@@ -2,6 +2,7 @@
 
 import pytorch_lightning as pl
 import pandas as pd
+import numpy as np
 import torch
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -9,6 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from .MultimodalDataset import MultimodalDataset
+from sklearn.utils import class_weight
 
 def clean_str(string):
     """
@@ -43,7 +45,11 @@ class MultimodalityDataModule(pl.LightningDataModule):
                  max_input_length,
                  base_img_dir,
                  num_workers=8,
-                 seed=443):
+                 seed=443,
+                 target_class_col='SET',
+                 caption_col='CAPTION',
+                 modality_col='MODALITY',
+                 path_col='PATH'):
         super().__init__()
         self.batch_size = batch_size
         self.data_path = data_path
@@ -53,14 +59,22 @@ class MultimodalityDataModule(pl.LightningDataModule):
         self.le = LabelEncoder()
         self.tokenizer = None
         self.num_workers = num_workers
+        self.target_class_col = target_class_col
+        self.caption_col = caption_col
+        self.modality_col = modality_col
+        self.path_col = path_col
     
     def prepare_data(self):
         self.df = pd.read_csv(self.data_path, sep='\t')
         #TODO check if I need to add the clean_str
         
     def setup(self):
-        train_df = self.df[self.df['SET']=='TRAIN']                
-        x0_train= train_df['CAPTION'].values
+        train_df = self.df[self.df[self.target_class_col]=='TRAIN']                
+        x0_train= train_df[self.caption_col].values
+        y_train = train_df[self.modality_col].values
+        
+        # calculate a class weight vector
+        self.class_weights = class_weight.compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
                         
         self.tokenizer = Tokenizer(num_words=self.vocab_size, filters='!"#$%&()*+,-/:;<=>?@[\\]^_`{|}~\t\n\'')
         self.tokenizer.fit_on_texts(x0_train)
@@ -85,8 +99,11 @@ class MultimodalityDataModule(pl.LightningDataModule):
             'TRAIN',
             image_transform=image_transform,
             tokenizer=self.tokenizer,
-            label_name='MODALITY',
-            max_input_length=self.max_input_length
+            label_name=self.modality_col,
+            max_input_length=self.max_input_length,
+            target_class_col=self.target_class_col,
+            caption_col=self.caption_col,
+            path_col=self.path_col
         )
         return DataLoader(dataset,
                           batch_size=self.batch_size,
@@ -108,8 +125,11 @@ class MultimodalityDataModule(pl.LightningDataModule):
             'VAL',
             image_transform=image_transform,
             tokenizer=self.tokenizer,
-            label_name='MODALITY',
-            max_input_length=self.max_input_length
+            label_name=self.modality_col,
+            max_input_length=self.max_input_length,
+            target_class_col=self.target_class_col,
+            caption_col=self.caption_col,
+            path_col=self.path_col
         )        
         return DataLoader(dataset,
                           batch_size=self.batch_size,
@@ -131,8 +151,11 @@ class MultimodalityDataModule(pl.LightningDataModule):
             'TEST',
             image_transform=image_transform,
             tokenizer=self.tokenizer,
-            label_name='MODALITY',
-            max_input_length=self.max_input_length
+            label_name=self.modality_col,
+            max_input_length=self.max_input_length,
+            target_class_col=self.target_class_col,
+            caption_col=self.caption_col,
+            path_col=self.path_col
         )        
         return DataLoader(dataset,
                           batch_size=self.batch_size,
