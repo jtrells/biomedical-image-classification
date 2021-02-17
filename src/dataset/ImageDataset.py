@@ -6,6 +6,9 @@ from skimage.color import gray2rgb
 
 
 class ImageDataset(torch.utils.data.Dataset): 
+    '''
+    Dataset created from a csv file
+    '''
     def __init__(
         self,
         csv_data_path,
@@ -44,6 +47,46 @@ class ImageDataset(torch.utils.data.Dataset):
         if self.image_transform:
             image = self.image_transform(image)
         return (image, label[0])
+    
+    def read_image(self, idx):
+        img_path = self.base_dir / self.df.iloc[idx][self.path_col]
+        image = io.imread(img_path)
+        # some clef images were grayscale
+        if len(image.shape) == 2:
+            image = gray2rgb(image)
+        else:
+            image = image[:, :, :3]
+        return image
+
+
+class EvalImageDataset(torch.utils.data.Dataset):
+    '''
+    Dataset created from a dataframe, not from a csv File
+    '''
+    def __init__(
+        self,
+        df,
+        base_img_dir,
+        image_transform=None,
+        path_col='PATH'
+    ):
+        self.base_dir = Path(base_img_dir)
+        self.image_transform = image_transform
+        self.path_col = path_col
+        self.df = df
+
+    def __len__(self):
+        return self.df.shape[0]
+    
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()                
+        
+        image = self.read_image(idx)
+
+        if self.image_transform:
+            image = self.image_transform(image)
+        return image
     
     def read_image(self, idx):
         img_path = self.base_dir / self.df.iloc[idx][self.path_col]
