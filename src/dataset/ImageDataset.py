@@ -66,7 +66,7 @@ class EvalImageDataset(torch.utils.data.Dataset):
     def __init__(
         self,
         df,
-        base_img_dir,
+        base_img_dir = './',
         image_transform=None,
         path_col='PATH'
     ):
