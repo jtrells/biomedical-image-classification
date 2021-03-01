@@ -20,3 +20,9 @@ nb/Biomedical-Image-Classification-Organisms
 nb/Biomedical-Image-Classification-Experimental
 nb/Biomedical-Image-Classification-Molecular
 data/images_loaded/
+src/flask/app_evl.py
+src/flask/app_example.py
+src/flask/app_example_2.py
+src/flask/app_example_3.py
+src/flask/static/save_images
+
