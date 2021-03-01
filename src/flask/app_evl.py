@@ -1,10 +1,10 @@
-# +
 import os
 import sys
 module_path = "../../src"
 if module_path not in sys.path:
     sys.path.append(module_path)
-    
+import mimetypes
+mimetypes.add_type('text/css', '.css')
 # 1. General Libraries
 import pandas as pd
 import numpy as np
@@ -27,7 +27,8 @@ import torch
 # General Variables
 ROOT_PATH  = '/berrios-3'
 PORT       = 6007
-UPLOAD_FOLDER = '../../data/images_loaded/'
+#UPLOAD_FOLDER = './static/save_images'
+UPLOAD_FOLDER = './static/save_images/'
 MODEL_NAME = '/mnt/artifacts/experiments/Biomedical-Image-Classification-Higher-Modality/v5hru53s/iconic-sweep-1/final.pt'
 
 DATA_PATH  = '../../data/higher_modality_vol1.csv'
@@ -50,7 +51,7 @@ test_aug = transforms.Compose(test_aug)
 def eval_image_flask(image_location,resnet_model,test_aug,le_encoder):
     df = pd.DataFrame({'img_path':[image_location]})
     test_dataset   = EvalImageDataset(df,
-                                      UPLOAD_FOLDER,
+                                      './',
                                       image_transform=test_aug,
                                       path_col='img_path')
     del df
@@ -66,15 +67,7 @@ def eval_image_flask(image_location,resnet_model,test_aug,le_encoder):
 
 
 # +
-#image_location = '/mnt/subfigure-classification/2016/train/DMFL/11373_2007_9226_Fig1_HTML-10.jpg'
-#eval_image_flask(image_location,resnet_model,test_aug,LABEL_ENCODER)[0]
-
-# +
 app = Flask(__name__)
-
-#@app.route(ROOT_PATH)
-#def hello():
-#    return "Hello World!"
 
 @app.route(ROOT_PATH,methods = ['GET','POST'])
 def upload_predict():
@@ -85,9 +78,10 @@ def upload_predict():
                 UPLOAD_FOLDER,
                 image_file.filename
             )
+            print('Image File name',image_file.filename)
+            print('Upload Folder'  ,UPLOAD_FOLDER)
             image_file.save(image_location)
             pred = eval_image_flask(image_location,resnet_model,test_aug,LABEL_ENCODER)[0]
-            print(image_file.filename)
             print(image_location)
             return render_template('index.html', Prediction = pred, image_loc = image_file.filename) 
     return render_template('index.html',Prediction = 0,image_loc = None)
