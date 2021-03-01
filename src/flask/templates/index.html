@@ -6,10 +6,13 @@
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">-->
     <!-- integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous" -->
 
     <!-- Custom styles for this template -->
-    <link rel="stylesheet" type="text/css" href="./static/css/form_upload.css">
+    <!--<link rel="stylesheet" type="text/css" href="static/css/form_upload.css">-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/form_upload.css') }}">
+    
   <style id="__web-inspector-hide-shortcut-style__" type="text/css">
 .__web-inspector-hide-shortcut__, .__web-inspector-hide-shortcut__ *, .__web-inspector-hidebefore-shortcut__::before, .__web-inspector-hideafter-shortcut__::after
 {
@@ -72,7 +75,7 @@
     {% endif %}
 
     </div>
-    
+      
   </div>
 </div>
 </main>
