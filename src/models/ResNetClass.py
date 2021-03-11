@@ -14,6 +14,8 @@ from scikitplot.metrics import plot_confusion_matrix
 from torchvision import models
 from sklearn.metrics import f1_score
 from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import recall_score
+from sklearn.metrics import precision_score
 
 
 class ResNetClass(pl.LightningModule):
@@ -73,12 +75,16 @@ class ResNetClass(pl.LightningModule):
         return out
     
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(),lr = self.hparams.lr)  
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,
-                                                               mode     = self.hparams.mode_scheduler,
-                                                               patience = 3, # Patience for the Scheduler
-                                                               verbose  = True)
-        return ({'optimizer': optimizer, 'lr_scheduler': scheduler, 'monitor': self.hparams.metric_monitor})
+        if  self.hparams.mode_scheduler == None:
+            optimizer = torch.optim.Adam(self.parameters(),lr = self.hparams.lr)  
+            return optimizer
+        else: 
+            optimizer = torch.optim.Adam(self.parameters(),lr = self.hparams.lr)  
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,
+                                                                   mode     = self.hparams.mode_scheduler,
+                                                                   patience = 3, # Patience for the Scheduler
+                                                                   verbose  = True)
+            return ({'optimizer': optimizer, 'lr_scheduler': scheduler, 'monitor': self.hparams.metric_monitor})
     
     def training_step(self,batch,batch_idx):
         x, y = batch
@@ -140,3 +146,5 @@ class ResNetClass(pl.LightningModule):
         self.log('test_loss', avg_loss)
         self.log('Macro F1-Score',f1_score(y_trues.cpu(), y_preds.cpu(), average='macro') )
         self.log('Balanced Accuracy',balanced_accuracy_score(y_trues.cpu(), y_preds.cpu()))
+        self.log('Macro Recall',recall_score(y_trues.cpu(), y_preds.cpu(), average='macro'))
+        self.log('Macro Precision',precision_score(y_trues.cpu(), y_preds.cpu(), average='macro'))
