@@ -13,6 +13,7 @@ module_path = "../dataset"
 if module_path not in sys.path:
     sys.path.append(module_path)
 from dataset.ImageDataModule import ImageDataModule
+import pickle
 
 
 def get_vector_representation(data_loader, model, device):
@@ -102,4 +103,8 @@ def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,VERSION = 1
     del embedding_train,embedding_val,embedding_test
     
     df_total = pd.concat([df_train,df_val,df_test],axis = 0).reset_index(drop = True)
-    df_total.to_csv(f'/mnt/artifacts/projections/higher_modality_v{VERSION}.csv',sep = '\t',index =False)
+    #df_total.to_csv(f'/mnt/artifacts/projections/higher_modality_v{VERSION}.csv',sep = '\t',index =False)
+    df_total.to_parquet(f'/mnt/artifacts/projections/higher_modality_v{VERSION}.parquet',index =False)
+    #with open(f'/mnt/artifacts/projections/higher_modality_features_v{VERSION}.pkl','wb') as f: pickle.dump(np.concatenate((fe_matrix_train, fe_matrix_val,fe_matrix_test), axis=0), f)
+    del fe_matrix_train, fe_matrix_val,fe_matrix_test
+    
