@@ -1,24 +1,10 @@
 import torch
-import torch.nn.functional as F
-import torch.nn as nn
 from tqdm.notebook import tqdm
 import numpy as np
 
 
-# Class to Extract Feature of the previous layer to softmax in Resnet
-class ResNetFeatureExtractor(nn.Module):
-            def __init__(self,model):
-                super(ResNetFeatureExtractor, self).__init__()
-                self.features = nn.Sequential(
-                    *list(model.children())[:-1]
-                )
-                
-            def forward(self, x):
-                x = self.features(x)
-                return x
-
-
 def get_vector_representation(data_loader, model, device):
+    model.to(device)
     # Put the model in eval mode
     model.eval()
     # List for store final predictions
@@ -32,5 +18,3 @@ def get_vector_representation(data_loader, model, device):
             predictions = predictions.cpu()
             final_predictions.append(predictions)
     return np.vstack((final_predictions))[:,:,0,0]
-
-
