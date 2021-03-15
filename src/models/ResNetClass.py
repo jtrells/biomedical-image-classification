@@ -32,7 +32,6 @@ class ResNetClass(pl.LightningModule):
                  std_dataset     = None):
         super().__init__()
         self.save_hyperparameters("name", "num_classes", "pretrained", "fine_tuned_from", "lr", "class_weights","metric_monitor","mode_scheduler","mean_dataset","std_dataset")   
-        self.criterion = self._get_cost_function()
         self.model     = self._get_resnet_model() 
         self.set_fine_tuning()
         
@@ -50,8 +49,8 @@ class ResNetClass(pl.LightningModule):
         # retarget the number of classes
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, self.hparams.num_classes)        
-
         return model
+    
     def set_fine_tuning(self):
         # by default set all to false
         for p in self.model.parameters(): p.requires_grad = False
@@ -66,13 +65,17 @@ class ResNetClass(pl.LightningModule):
         
     def _get_cost_function(self):
         if self.hparams.class_weights is not None:
-            return nn.CrossEntropyLoss(weight=torch.Tensor(self.hparams.class_weights))
+            return nn.CrossEntropyLoss(weight=torch.Tensor(self.hparams.class_weights).to('cuda'))
         else:
             return nn.CrossEntropyLoss()
     
     def forward(self,x):
         out = self.model(x)
         return out
+    
+    def feature_extraction(self):
+        features= nn.Sequential(*list(self.model.children())[:-1])
+        return features
     
     def configure_optimizers(self):
         if  self.hparams.mode_scheduler == None:
@@ -87,9 +90,10 @@ class ResNetClass(pl.LightningModule):
             return ({'optimizer': optimizer, 'lr_scheduler': scheduler, 'monitor': self.hparams.metric_monitor})
     
     def training_step(self,batch,batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
+        x, y      = batch
+        y_hat     = self(x)
+        criterion = self._get_cost_function()
+        loss = criterion(y_hat, y)
         _, preds = torch.max(y_hat, dim=1)
         return {'loss': loss, 'train_preds': preds, 'train_trues': y}
     
@@ -103,10 +107,11 @@ class ResNetClass(pl.LightningModule):
         self.log('train_avg_loss',avg_loss,on_epoch=True, prog_bar=True, logger=True)
     
     def validation_step(self, batch, batch_idx):
-        x, y = batch
-        y_hat = self(x)
-        loss = self.criterion(y_hat, y)
-        _, preds = torch.max(y_hat, dim=1)
+        x, y      = batch
+        y_hat     = self(x)
+        criterion = self._get_cost_function()
+        loss      = criterion(y_hat, y)
+        _, preds  = torch.max(y_hat, dim=1)
         return {'loss': loss, 'val_preds': preds, 'val_trues': y}      
     
     def validation_epoch_end(self,outputs):
@@ -124,7 +129,8 @@ class ResNetClass(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         x, y = batch
         y_hat = self(x)
-        loss = self.criterion(y_hat, y)
+        criterion = self._get_cost_function()
+        loss      = criterion(y_hat, y)
         _, preds = torch.max(y_hat, dim=1)
         return {'loss': loss, 'test_preds': preds, 'test_trues': y}  
     
@@ -148,3 +154,5 @@ class ResNetClass(pl.LightningModule):
         self.log('Balanced Accuracy',balanced_accuracy_score(y_trues.cpu(), y_preds.cpu()))
         self.log('Macro Recall',recall_score(y_trues.cpu(), y_preds.cpu(), average='macro'))
         self.log('Macro Precision',precision_score(y_trues.cpu(), y_preds.cpu(), average='macro'))
+
+
