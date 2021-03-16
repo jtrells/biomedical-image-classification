@@ -33,7 +33,7 @@ def get_vector_representation(data_loader, model, device):
     return np.vstack((final_predictions))[:,:,0,0]
 
 
-def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,VERSION = 1):
+def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,CLASSF ='higher_modality' ,VERSION = 1):
     ## Get Feature Vector for the dataset
     df        = pd.read_csv(DATA_PATH,sep = '\t')    
     transform = [transforms.ToPILImage(),
@@ -104,7 +104,7 @@ def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,VERSION = 1
     
     df_total = pd.concat([df_train,df_val,df_test],axis = 0).reset_index(drop = True)
     #df_total.to_csv(f'/mnt/artifacts/projections/higher_modality_v{VERSION}.csv',sep = '\t',index =False)
-    df_total.to_parquet(f'/mnt/artifacts/projections/higher_modality_v{VERSION}.parquet',index =False)
+    df_total.to_parquet(f'/mnt/artifacts/projections/{CLASSF}_v{VERSION}.parquet',index =False)
     #with open(f'/mnt/artifacts/projections/higher_modality_features_v{VERSION}.pkl','wb') as f: pickle.dump(np.concatenate((fe_matrix_train, fe_matrix_val,fe_matrix_test), axis=0), f)
     del fe_matrix_train, fe_matrix_val,fe_matrix_test
-    
+
