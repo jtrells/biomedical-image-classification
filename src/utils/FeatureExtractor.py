@@ -14,7 +14,11 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 from dataset.ImageDataModule import ImageDataModule
 import pickle
+from sklearn.neighbors import NearestNeighbors
+from sklearn import preprocessing
 
+
+# +
 
 def get_vector_representation(data_loader, model, device):
     model.to(device)
@@ -31,6 +35,21 @@ def get_vector_representation(data_loader, model, device):
             predictions = predictions.cpu()
             final_predictions.append(predictions)
     return np.vstack((final_predictions))[:,:,0,0]
+
+
+# -
+
+def calc_neighborhood_hit(df,x_col,y_col, n_neighbors=6):    
+    projections = [[i, j] for (i, j) in zip(df[x_col], df[y_col])]
+    neigh = NearestNeighbors(n_neighbors=n_neighbors, algorithm='ball_tree').fit(projections)
+    le = preprocessing.LabelEncoder().fit(df['target'].unique())
+    n_hits = []
+    for neighborhood in neigh.kneighbors(projections, n_neighbors + 1, return_distance=False):
+        labels  = le.transform(df.iloc[neighborhood]['target'].values)
+        targets = [labels[0]] * (len(labels) - 1) 
+        n_hit = np.mean(targets == labels[1:])
+        n_hits.append(n_hit)
+    return n_hits
 
 
 def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,CLASSF ='higher_modality' ,VERSION = 1):
@@ -86,6 +105,12 @@ def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,CLASSF ='hi
     df_val['pca_x']  , df_val['pca_y']   = embedding_val[:,0]  ,embedding_val[:,1]
     df_test['pca_x'] , df_test['pca_y']  = embedding_test[:,0]  ,embedding_test[:,1]
     
+    # Adding the PCA n_hits
+    df_train['pca_hits'] = calc_neighborhood_hit(df_train,'pca_x','pca_y', n_neighbors=6)
+    df_val['pca_hits'] = calc_neighborhood_hit(df_val,'pca_x','pca_y', n_neighbors=6)
+    df_test['pca_hits'] = calc_neighborhood_hit(df_test,'pca_x','pca_y', n_neighbors=6)
+    
+    
     del embedding_train,embedding_val,embedding_test
     
     
@@ -99,6 +124,12 @@ def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,CLASSF ='hi
     df_train['umap_x'], df_train['umap_y'] = embedding_train[:,0],embedding_train[:,1]
     df_val['umap_x']  , df_val['umap_y']   = embedding_val[:,0]  ,embedding_val[:,1]
     df_test['umap_x'] , df_test['umap_y']  = embedding_test[:,0]  ,embedding_test[:,1]
+    
+    
+    # Adding the UMAP n_hits
+    df_train['umap_hits'] = calc_neighborhood_hit(df_train,'umap_x','umap_y', n_neighbors=6)
+    df_val['umap_hits'] = calc_neighborhood_hit(df_val,'umap_x','umap_y', n_neighbors=6)
+    df_test['umap_hits'] = calc_neighborhood_hit(df_test,'umap_x','umap_y', n_neighbors=6)
     
     del embedding_train,embedding_val,embedding_test
     
