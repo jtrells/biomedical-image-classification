@@ -6,12 +6,12 @@ import yaml
 from argparse import ArgumentParser
 from os import makedirs, listdir
 # 2. DataModule & Class Libraries
-from .utils.label_encoder import label_encoder_target
-from .utils.calc_stat import calc_dataset_mean_std
-from .dataset.ImageDataModule import ImageDataModule
-from .dataset.ImageDataset import ImageDataset
-from .models.EfficientNetClass import EfficientNetClass
-from .models.ResNetClass import ResNetClass
+from utils.label_encoder import label_encoder_target
+from utils.calc_stat import calc_dataset_mean_std
+from dataset.ImageDataModule import ImageDataModule
+from dataset.ImageDataset import ImageDataset
+from models.EfficientNetClass import EfficientNetClass
+from models.ResNetClass import ResNetClass
 # 3. Pytorch & Pytorch Lightning Libraries
 from pytorch_lightning import Trainer,seed_everything
 from torchvision import transforms
@@ -23,7 +23,7 @@ import wandb
 
 class Run():
     def __init__(self):
-        args = self.__read_arguments()
+        args = self._read_arguments()
         self.data_path = Path(args.dataset_filepath)
         self.base_img_dir = Path(args.images_path)
         self.num_workers = args.num_workers
@@ -31,6 +31,7 @@ class Run():
         self.project = args.project
         self.lr = args.lr
         self.gpus = args.gpus
+        self.classifier = args.classifier_name
         self.metric_monitor = 'val_avg_loss'
         self.mode = 'min'
         self.extension = '.pt'
@@ -39,12 +40,12 @@ class Run():
         self.split_col = 'split_set'
         self.img_path_col = 'img_path'        
 
-        self.output_dir= Path(args.output_dir) / args.classifier_name
-        self.version = self._get_version()
+        self.output_dir= Path(args.output_dir) / self.classifier
         makedirs(self.output_dir, exist_ok=True)
+        self.version = self._get_version()        
 
         df = pd.read_csv(self.data_path, sep='\t')
-        self.le = label_encoder_target(df)
+        self.le, dict_label = label_encoder_target(df)
 
         pass
 
@@ -60,6 +61,8 @@ class Run():
         parser.add_argument('--classifier_name', type=str)
         parser.add_argument('--project', type=str)
         parser.add_argument('--gpus', type=int, default=1)
+        parser.add_argument('--lr', type=float, default=0.0001)
+        parser.add_argument('--model_name', type=str, default='resnet101')
 
         return parser.parse_args()
 
@@ -76,7 +79,7 @@ class Run():
         transform  = transforms.Compose(transform_list)
         train_dataset   = ImageDataset( self.data_path,
                                         self.le,
-                                        str(self.base_image_dir),
+                                        str(self.base_img_dir),
                                         'TRAIN',
                                         image_transform=transform,
                                         label_name=self.label_col,
@@ -86,7 +89,7 @@ class Run():
         mean, std = calc_dataset_mean_std(train_dataset, batch_size=self.batch_size, num_workers=self.num_workers)
         return mean, std
 
-    def _get_train_val_transformations(mean, std):
+    def _get_train_val_transformations(self, mean, std):
         train_transform = [
                             transforms.ToPILImage(),
                             transforms.Resize((256, 256)),
@@ -126,7 +129,7 @@ class Run():
         wandb_logger.experiment.save()
 
         output_run_path = self.output_dir
-        makedirs(output_run_path, exist_ok=False)
+        # makedirs(output_run_path, exist_ok=False)
 
         # setup data
         dm = ImageDataModule( batch_size     = self.batch_size,
