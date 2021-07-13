@@ -16,9 +16,10 @@ from dataset.ImageDataModule import ImageDataModule
 import pickle
 from sklearn.neighbors import NearestNeighbors
 from sklearn import preprocessing
+from dataset.ImageDataset import ImageDataset, EvalImageDataset
+from torch.utils.data import DataLoader
+from pathlib import Path
 
-
-# +
 
 def get_vector_representation(data_loader, model, device):
     model.to(device)
@@ -29,29 +30,31 @@ def get_vector_representation(data_loader, model, device):
     with torch.no_grad():
         tk0 = tqdm(data_loader, total=len(data_loader))
         for b_idx, data in enumerate(tk0):
-            for i in range(len(data)):
-                data[i] = data[i].to(device)
-            predictions = model(data[0])
+            if isinstance(data, tuple):
+                for i in range(len(data)):
+                    data[i] = data[i].to(device)
+                predictions = model(data[0])
+            else:
+                predictions = model(data.to(device))
             predictions = predictions.cpu()
             final_predictions.append(predictions)
     return np.vstack((final_predictions))[:,:,0,0]
 
 
-# -
-
-def calc_neighborhood_hit(df,x_col,y_col, n_neighbors=6):    
+def calc_neighborhood_hit(df,x_col,y_col, n_neighbors=6,column_label='target'):    
     projections = [[i, j] for (i, j) in zip(df[x_col], df[y_col])]
     neigh = NearestNeighbors(n_neighbors=n_neighbors, algorithm='ball_tree').fit(projections)
-    le = preprocessing.LabelEncoder().fit(df['target'].unique())
+    le = preprocessing.LabelEncoder().fit(df[column_label].unique())
     n_hits = []
     for neighborhood in neigh.kneighbors(projections, n_neighbors + 1, return_distance=False):
-        labels  = le.transform(df.iloc[neighborhood]['target'].values)
+        labels  = le.transform(df.iloc[neighborhood][column_label].values)
         targets = [labels[0]] * (len(labels) - 1) 
         n_hit = np.mean(targets == labels[1:])
         n_hits.append(n_hit)
     return n_hits
 
 
+# +
 def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,CLASSF ='higher_modality' ,VERSION = 1):
     ## Get Feature Vector for the dataset
     df        = pd.read_csv(DATA_PATH,sep = '\t')    
@@ -70,7 +73,7 @@ def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,CLASSF ='hi
                               image_transforms = [transform,transform,transform],
                               num_workers      = 72,
                               target_class_col ='split_set',
-                              modality_col     ='higher_modality',
+                              modality_col     ='target',
                               path_col         ='img_path',
                               shuffle_train    = False) # Not Shuffling Train
     dm.prepare_data()
@@ -138,4 +141,42 @@ def prepare_projection(model ,le_encoder,DATA_PATH,BASE_IMG_DIR,SEED,CLASSF ='hi
     df_total.to_parquet(f'/mnt/artifacts/projections/{CLASSF}_v{VERSION}.parquet',index =False)
     #with open(f'/mnt/artifacts/projections/higher_modality_features_v{VERSION}.pkl','wb') as f: pickle.dump(np.concatenate((fe_matrix_train, fe_matrix_val,fe_matrix_test), axis=0), f)
     del fe_matrix_train, fe_matrix_val,fe_matrix_test
+    
+def evaluate_projection(DF_UL,model,prev_train_dataset,SEED=42):
+    df = pd.read_parquet(prev_train_dataset)
+    fe_matrix_train = np.vstack(df[df['split_set']=='TRAIN'].reset_index(drop = True)['feature_vector'].values)
+    
+    fe_model = model.feature_extraction()
+    val_transform = transforms.Compose([
+                    transforms.ToPILImage(),
+                    transforms.Resize((224, 224)),
+                    transforms.ToTensor(),
+                    transforms.Normalize(model.hparams['mean_dataset'].numpy(),model.hparams['std_dataset'].numpy())
+                    ])
 
+    DF_UL_dataset    = EvalImageDataset (DF_UL,image_transform=val_transform,path_col='img_path',base_img_dir = Path('/mnt/'))
+    DF_UL_dataloader = DataLoader(dataset     = DF_UL_dataset,
+                                  batch_size  = 32,
+                                  shuffle     = False,
+                                  num_workers = 72)
+    
+    fe_matrix_unlabeled = get_vector_representation(DF_UL_dataloader,fe_model,'cuda')
+    # PCA
+    print('Generating PCA coordinates...')
+    pca = PCA(n_components=2,random_state = SEED)
+    pca.fit(fe_matrix_train)
+    embedding_unlabeled = pca.transform(fe_matrix_unlabeled)
+    DF_UL['pca_x'] = embedding_unlabeled[:,0]
+    DF_UL['pca_y'] = embedding_unlabeled[:,1]
+    DF_UL['pca_hits'] = calc_neighborhood_hit(DF_UL,'pca_x','pca_y', n_neighbors=6,column_label = 'target_predicted')
+    
+    #UMAP
+    print('Generating Umap coordinates...')
+    reducer = umap.UMAP(random_state=SEED)
+    reducer.fit(fe_matrix_train)
+    embedding_unlabeled = reducer.transform(fe_matrix_unlabeled)
+    DF_UL['umap_x'] = embedding_unlabeled[:,0]
+    DF_UL['umap_y'] = embedding_unlabeled[:,1]
+    DF_UL['umap_hits'] = calc_neighborhood_hit(DF_UL,'umap_x','umap_y', n_neighbors=6,column_label = 'target_predicted')
+
+    del fe_matrix_train,fe_matrix_unlabeled,embedding_unlabeled

@@ -50,7 +50,7 @@ class ImageDataset(torch.utils.data.Dataset):
     
     def read_image(self, idx):
         img_path = self.base_dir / self.df.iloc[idx][self.path_col]
-        image = io.imread(img_path)
+        image = io.imread(img_path,pilmode="RGB")
         # some clef images were grayscale
         if len(image.shape) == 2:
             image = gray2rgb(image)

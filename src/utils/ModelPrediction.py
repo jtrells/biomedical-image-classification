@@ -75,11 +75,10 @@ def all_pred(data_loader,model,device):
     return np.hstack(final_all_probs),np.hstack(final_predictions),np.hstack(final_probs)
 
 
-def run_metrics(df,y_true,y_pred,it):
-    acc             = accuracy_score(y_true, y_pred)
-    balanced_acc    = balanced_accuracy_score(y_true, y_pred)
-    macro_f1        = f1_score (y_true,y_pred,average='macro')
-    macro_recall    = recall_score(y_true,y_pred,average='macro')
-    macro_precision = precision_score(y_true,y_pred, average='macro')
-    df = pd.concat([df,pd.DataFrame({'Iteration':[it],'Acc':[acc],'Macro - F1':[macro_f1],
-                                      'Macro - Recall':[macro_recall],'Macro_Precision':[macro_precision]})],axis = 1)
+def run_metrics(y_true,y_pred):
+    acc             = np.round(100*accuracy_score(y_true, y_pred),2)
+    balanced_acc    = np.round(100*balanced_accuracy_score(y_true, y_pred),2)
+    macro_f1        = np.round(100*f1_score (y_true,y_pred,average='macro'),2)
+    macro_recall    = np.round(100*recall_score(y_true,y_pred,average='macro'),2)
+    macro_precision = np.round(100*precision_score(y_true,y_pred, average='macro'),2)
+    return acc,balanced_acc,macro_f1,macro_recall,macro_precision

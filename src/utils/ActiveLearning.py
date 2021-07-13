@@ -62,3 +62,31 @@ def get_uncertain_samples(y_pred_prob, n_samples, criteria):
     else:
         raise ValueError(
             'Unknown criteria value \'%s\', use one of [\'rs\',\'lc\',\'ms\',\'en\']' % criteria)
+        
+        
+# Calculation 
+def calc_entropy(y_pred_prob):
+    return -np.nansum(np.multiply(y_pred_prob, np.log(y_pred_prob)), axis=1)
+def cal_margin_sampling(y_pred_prob):
+    return np.diff(-np.sort(y_pred_prob)[:, ::-1][:, :2])
+def calc_least_confidence(y_pred_prob):
+    return np.max(y_pred_prob, axis=1)
+def calc_random_sampling(y_pred_prob):
+    np.random.seed(42)
+    return np.random.rand(len(y_pred_prob))
+
+def calc_uncertainty(y_pred_prob,criteria):
+    if criteria=='en':
+        return calc_entropy(y_pred_prob)
+    elif criteria=='ms':
+        return cal_margin_sampling(y_pred_prob)
+    elif criteria=='lc':
+        return calc_least_confidence(y_pred_prob)
+    elif criteria == 'rs':
+        return calc_random_sampling(y_pred_prob)
+    else:
+        raise ValueError(
+            'Unknown criteria value \'%s\', use one of [\'rs\',\'lc\',\'ms\',\'en\']' % criteria)
+        
+def get_confidence_samples(df, delta):
+    return df[df['en']<delta].index.to_numpy()

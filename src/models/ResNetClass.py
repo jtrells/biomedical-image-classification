@@ -123,7 +123,7 @@ class ResNetClass(pl.LightningModule):
         acc_val_epoch = 100 * torch.sum(y_preds == y_trues.data) / (y_trues.shape[0] * 1.0)
         self.log('val_acc',acc_val_epoch,on_epoch=True, prog_bar=True, logger=True)
         self.log('val_avg_loss',avg_loss,on_epoch=True, prog_bar=True, logger=True)
-        #print(f"acc_val_epoch: {acc_val_epoch},val_avg_loss: {avg_loss} ")
+        print(f"acc_val_epoch: {acc_val_epoch},val_avg_loss: {avg_loss} ")
                 
     
     def test_step(self, batch, batch_idx):
