@@ -32,6 +32,7 @@ class Run():
         self.lr = args.lr
         self.gpus = args.gpus
         self.classifier = args.classifier_name
+        self.model_name = args.model_name
         self.metric_monitor = 'val_avg_loss'
         self.mode = 'min'
         self.extension = '.pt'
@@ -165,7 +166,7 @@ class Run():
 
         num_classes = len(self.le.classes_)
         
-        model = ResNetClass    (name            = wandb.config.name,
+        model = ResNetClass    (name            = self.model_name,
                                 num_classes     = num_classes,
                                 pretrained      = True,
                                 fine_tuned_from = 'whole',
