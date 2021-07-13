@@ -33,6 +33,7 @@ class Run():
         self.gpus = args.gpus
         self.classifier = args.classifier_name
         self.model_name = args.model_name
+        self.epochs = args.epochs
         self.metric_monitor = 'val_avg_loss'
         self.mode = 'min'
         self.extension = '.pt'
