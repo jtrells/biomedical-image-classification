@@ -21,40 +21,51 @@ ROOT = '/jtrell2-2'
 PROJECTIONS = '/mnt/artifacts/projections'
 CLASSIFIERS = '/mnt/artifacts/classifiers'
 
-def calc_neighborhood_hit(df, projection, label_col, n_neighbors=6):    
-    projections = [[i, j] for (i, j) in zip(df.x.values, df.y.values)]
-    neigh = NearestNeighbors(n_neighbors=n_neighbors, algorithm='ball_tree').fit(projections)
-    le = preprocessing.LabelEncoder().fit(df[label_col].unique())
+# def calc_neighborhood_hit(df, projection, label_col, n_neighbors=6):    
+#     projections = [[i, j] for (i, j) in zip(df.x.values, df.y.values)]
+#     neigh = NearestNeighbors(n_neighbors=n_neighbors, algorithm='ball_tree').fit(projections)
+#     le = preprocessing.LabelEncoder().fit(df[label_col].unique())
     
-    n_hits = []
-    for neighborhood in neigh.kneighbors(projections, n_neighbors + 1, return_distance=False):
-        labels  = le.transform(df.iloc[neighborhood][label_col].values)
-        targets = [labels[0]] * (len(labels) - 1) 
-        n_hit = np.mean(targets == labels[1:])
-        n_hits.append(n_hit)
-    return n_hits
+#     n_hits = []
+#     for neighborhood in neigh.kneighbors(projections, n_neighbors + 1, return_distance=False):
+#         labels  = le.transform(df.iloc[neighborhood][label_col].values)
+#         targets = [labels[0]] * (len(labels) - 1) 
+#         n_hit = np.mean(targets == labels[1:])
+#         n_hits.append(n_hit)
+#     return n_hits
 
-def file2json(file_path, projection, dataset, label_col_name):
+def file2json(file_path, projection, dataset):
     df = pd.read_parquet(file_path)
-    df = df[df['split_set'] == dataset.upper()] # if there are no other, returns all :S    
+    
+    if dataset.upper() != 'UNLABELED':
+        df = df[df['split_set'] == dataset.upper()] # if there are no other, returns all :S    
     x = f"{projection}_x"
     y = f"{projection}_y"
-    df = df[["img", "img_path", x, y, "higher_modality"]].rename(columns={
-        "higher_modality": label_col_name,
+    hits = f"{projection}_hits"
+    
+    print(df.head())
+    
+    df = df[["img", "img_path", x, y, hits, "target", "target_predicted"]].rename(columns={
+        "target": "label",
         x: "x",
-        y: "y"
+        y: "y",
+        hits: "hits"
     })
-    hits = calc_neighborhood_hit(df, projection, label_col_name)
-    df["hits"] = hits
     
     return df.to_json(orient="records")
 
+
+@app.route('/hello')
+def hello():
+    return {"message": "hello"}
+
 @app.route(ROOT + "/projection/<string:classifier>/<int:version>/<string:dataset>/<string:projection>", methods=['GET'])
 def fetch_projections(classifier, version, dataset, projection):
-    file_name = f"{escape(classifier)}_v{escape(version)}.parquet"
+    unlabeled_suffix = "" if escape(dataset).upper() != 'UNLABELED' else "_unlabeled"    
+    file_name = f"{escape(classifier)}{unlabeled_suffix}_v{escape(version)}.parquet"
     file_path = path.join(PROJECTIONS, file_name)
     if path.exists(file_path):
-        return file2json(file_path, escape(projection), escape(dataset), "label")
+        return file2json(file_path, escape(projection), escape(dataset))
     else:
         return { "error": "file not found" }
     
