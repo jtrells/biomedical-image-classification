@@ -69,7 +69,7 @@ class Run():
         return parser.parse_args()
 
     def _get_version(self):
-        models = [x for x in listdir(self.output_dir) if x[:-3] == '.pt']
+        models = [x for x in listdir(self.output_dir) if x[-3:] == '.pt']
         return len(models) + 1        
 
     def _calculate_dataset_stats(self):
