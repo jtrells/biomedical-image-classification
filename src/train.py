@@ -161,23 +161,25 @@ class Run():
         checkpoint_callback.FILE_EXTENSION = self.extension
 
         num_classes = len(self.le.classes_)
-        if self.version == 1:
-            model = ResNetClass    (name            = wandb.config.name,
-                                    num_classes     = num_classes,
-                                    pretrained      = True,
-                                    fine_tuned_from = 'whole',
-                                    lr              = self.lr,
-                                    metric_monitor  = self.metric_monitor,
-                                    mode_scheduler  = self.mode,
-                                    class_weights   = dm.class_weights,
-                                    mean_dataset    = mean,
-                                    std_dataset     = std)
-        else:
-            model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')
-            model.class_weights = dm.class_weights
-            model.mean_dataset = mean
-            model.std_dataset = std
-            self.save_hyperparameters("class_weights","mean_dataset","std_dataset")
+        
+        model = ResNetClass    (name            = wandb.config.name,
+                                num_classes     = num_classes,
+                                pretrained      = True,
+                                fine_tuned_from = 'whole',
+                                lr              = self.lr,
+                                metric_monitor  = self.metric_monitor,
+                                mode_scheduler  = self.mode,
+                                class_weights   = dm.class_weights,
+                                mean_dataset    = mean,
+                                std_dataset     = std)
+        if self.version > 1:
+            # model = ResNetClass.load_from_checkpoint(self.output_dir/f'{self.classifier}_{self.version}.{self.extension}')
+            # model.class_weights = dm.class_weights
+            # model.mean_dataset = mean
+            # model.std_dataset = std
+            # self.save_hyperparameters("class_weights","mean_dataset","std_dataset")            
+            checkpoint = torch.load(self.output_dir/f'{self.classifier}_{self.version-1}.{self.extension}')
+            model.load_state_dict(checkpoint['state_dict'])
 
         max_epochs = 100 if self.epochs == 0 else self.epochs
         callbacks = [lr_monitor, checkpoint_callback, early_stop_callback]
