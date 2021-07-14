@@ -13,6 +13,7 @@ from dataset.ImageDataset import ImageDataset
 from models.EfficientNetClass import EfficientNetClass
 from models.ResNetClass import ResNetClass
 # 3. Pytorch & Pytorch Lightning Libraries
+import torch
 from pytorch_lightning import Trainer,seed_everything
 from torchvision import transforms
 from pytorch_lightning.callbacks import LearningRateMonitor,ModelCheckpoint
@@ -183,7 +184,7 @@ class Run():
             # model.mean_dataset = mean
             # model.std_dataset = std
             # self.save_hyperparameters("class_weights","mean_dataset","std_dataset")            
-            checkpoint = torch.load(self.output_dir/f'{self.classifier}_{self.version-1}.{self.extension}')
+            checkpoint = torch.load(self.output_dir/f'{self.classifier}_{self.version-1}{self.extension}')
             model.load_state_dict(checkpoint['state_dict'])
 
         max_epochs = 100 if self.epochs == 0 else self.epochs
