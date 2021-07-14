@@ -1,3 +1,4 @@
 umap-learn==0.5.1 # Umap
 iterative-stratification==0.1.6 # Multilabel Stratified
+fastparquet==0.6.3
 # sudo apt install libgl1-mesa-glx -:> Needed for Opencv2
