@@ -22,7 +22,7 @@ from pytorch_lightning.loggers import WandbLogger
 # 4. Wandb Tracker Experiements
 import wandb
 
-class Trainer():
+class TrainerWrapper():
     def __init__(self, dataset_filepath, images_path, output_dir, taxonomy, classifier_name, project, label_col="label", model_name='resnet18', gpus=1, lr=0.0001, batch_size=32, epochs=0, seed=443, num_workers=16):
         self.data_path = Path(dataset_filepath)
         self.base_img_dir = Path(images_path)
@@ -201,7 +201,7 @@ def read_arguments():
 
 if __name__ == '__main__':
     args = read_arguments()
-    run = Trainer(args.dataset_filepath,
+    run = TrainerWrapper(args.dataset_filepath,
             args.images_path,
             args.output_dir,
             args.taxonomy,
