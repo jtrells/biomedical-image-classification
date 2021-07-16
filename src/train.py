@@ -48,7 +48,7 @@ class Trainer():
         self.version = self._get_version()        
 
         df = pd.read_csv(self.data_path, sep='\t')
-        self.le, _ = label_encoder_target(df)
+        self.le, _ = label_encoder_target(df, target_col=self.label_col)
 
     def _get_version(self):
         models = [x for x in listdir(self.output_dir) if x[-3:] == '.pt']
