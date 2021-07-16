@@ -22,52 +22,33 @@ from pytorch_lightning.loggers import WandbLogger
 # 4. Wandb Tracker Experiements
 import wandb
 
-class Run():
-    def __init__(self):
-        args = self._read_arguments()
-        self.data_path = Path(args.dataset_filepath)
-        self.base_img_dir = Path(args.images_path)
-        self.num_workers = args.num_workers
-        self.seed = args.seed
-        self.project = args.project
-        self.lr = args.lr
-        self.gpus = args.gpus
-        self.classifier = args.classifier_name
-        self.model_name = args.model_name
-        self.epochs = args.epochs
+class Trainer():
+    def __init__(self, dataset_filepath, images_path, output_dir, taxonomy, classifier_name, project, model_name='resnet18', gpus=1, lr=0.0001, batch_size=32, epochs=0, seed=443, num_workers=16):
+        self.data_path = Path(dataset_filepath)
+        self.base_img_dir = Path(images_path)
+        self.num_workers = num_workers
+        self.seed = seed
+        self.project = project
+        self.lr = lr
+        self.gpus = gpus
+        self.classifier = classifier_name
+        self.model_name = model_name
+        self.epochs = epochs
         self.metric_monitor = 'val_avg_loss'
         self.mode = 'min'
         self.extension = '.pt'
-        self.batch_size = args.batch_size
+        self.batch_size = batch_size
         self.label_col = 'higher_modality'
         self.split_col = 'split_set'
-        self.img_path_col = 'img_path'        
+        self.img_path_col = 'img_path'
+        self.taxonomy = taxonomy
 
-        self.output_dir= Path(args.output_dir) / self.classifier
+        self.output_dir= Path(output_dir) / self.taxonomy / self.classifier
         makedirs(self.output_dir, exist_ok=True)
         self.version = self._get_version()        
 
         df = pd.read_csv(self.data_path, sep='\t')
-        self.le, dict_label = label_encoder_target(df)
-
-        pass
-
-    def _read_arguments(self):
-        parser = ArgumentParser(description="biomedical image classifier")
-        parser.add_argument('--batch_size', type=int, default=32)
-        parser.add_argument('--epochs', type=int, default=0, help='if 0, use patience')
-        parser.add_argument('--seed', type=int, default=443)
-        parser.add_argument('--num_workers', type=int, default=16)
-        parser.add_argument('--dataset_filepath', type=str, help='location of .csv file')
-        parser.add_argument('--images_path', type=str, help='root folder for training images')
-        parser.add_argument('--output_dir', type=str, help='where to save results')
-        parser.add_argument('--classifier_name', type=str)
-        parser.add_argument('--project', type=str)
-        parser.add_argument('--gpus', type=int, default=1)
-        parser.add_argument('--lr', type=float, default=0.0001)
-        parser.add_argument('--model_name', type=str, default='resnet101')
-
-        return parser.parse_args()
+        self.le, _ = label_encoder_target(df)
 
     def _get_version(self):
         models = [x for x in listdir(self.output_dir) if x[-3:] == '.pt']
@@ -201,6 +182,34 @@ class Run():
         return f'{self.classifier}_{self.version}.{self.extension}'
 
 
+def read_arguments():
+    parser = ArgumentParser(description="biomedical image classifier")
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--epochs', type=int, default=0, help='if 0, use patience')
+    parser.add_argument('--seed', type=int, default=443)
+    parser.add_argument('--num_workers', type=int, default=16)
+    parser.add_argument('--dataset_filepath', type=str, help='location of .csv file')
+    parser.add_argument('--images_path', type=str, help='root folder for training images')
+    parser.add_argument('--output_dir', type=str, help='where to save results')
+    parser.add_argument('--classifier_name', type=str)
+    parser.add_argument('--project', type=str)
+    parser.add_argument('--gpus', type=int, default=1)
+    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--model_name', type=str, default='resnet101')
+
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    run = Run()
+    args = read_arguments()
+    run = Trainer(args.dataset_filepath,
+            args.images_path,
+            args.output_dir,
+            args.taxonomy,
+            args.classifier_name,
+            args.project,
+            model_name=args.model_name,
+            batch_size=args.batch_size,
+            epochs=args.epochs,
+            seed=args.seed,
+            num_workers=args.num_workers)
     run.run()

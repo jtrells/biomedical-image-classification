@@ -180,3 +180,57 @@ def evaluate_projection(DF_UL,model,prev_train_dataset,SEED=42):
     DF_UL['umap_hits'] = calc_neighborhood_hit(DF_UL,'umap_x','umap_y', n_neighbors=6,column_label = 'target_predicted')
 
     del fe_matrix_train,fe_matrix_unlabeled,embedding_unlabeled
+
+
+def extract_features(fe_model, dataloader):
+    fe_model.to('cuda')
+    fe_model.eval()
+
+    all_features = []
+    with torch.no_grad():
+        for x, y in dataloader:
+            x = x.to('cuda')
+            features = fe_model(x)
+            features = features.squeeze()
+            features = features.cpu()
+            all_features.append(features)
+    return np.vstack((all_features))
+
+
+def update_features(model, label_encoder, csv_path, base_img_dir, seed=42, batch_size=32, num_workers=16):
+    df        = pd.read_csv(csv_path, sep='\t')    
+    transform = [transforms.ToPILImage(),
+                 transforms.Resize((224, 224)),
+                 transforms.ToTensor(),
+                 transforms.Normalize(model.hparams['mean_dataset'], model.hparams['std_dataset'])
+                ]
+    transform = transforms.Compose(transform)
+    
+    dm = ImageDataModule    ( batch_size  = batch_size,
+                              label_encoder    = label_encoder,
+                              data_path        = str(csv_path), 
+                              base_img_dir     = str(base_img_dir),
+                              seed             = seed,   
+                              image_transforms = [transform,transform,transform],
+                              num_workers      = num_workers,
+                              target_class_col ='split_set',
+                              modality_col     ='target',
+                              path_col         ='img_path',
+                              shuffle_train    = False) # Not Shuffling Train
+    dm.prepare_data()
+    dm.setup()    
+
+    df_train = df[df['split_set']=='TRAIN'].reset_index(drop = True)
+    df_val = df[df['split_set']=='VAL'].reset_index(drop = True)
+    df_test = df[df['split_set']=='TEST'].reset_index(drop = True)
+    fe_model = model.feature_extraction()
+    train_dataloader, val_dataloader, test_dataloader = dm.train_dataloader(), dm.val_dataloader(), dm.test_dataloader()
+
+    df_train['features'] = list(extract_features(fe_model, train_dataloader))
+    df_val['features'] = list(extract_features(fe_model, val_dataloader))
+    df_test['features'] = list(extract_features(fe_model, test_dataloader))
+
+    df = pd.concat([df_train, df_val, df_test], sort=False)
+    df.to_csv(csv_path, sep='\t')
+    return df
+
