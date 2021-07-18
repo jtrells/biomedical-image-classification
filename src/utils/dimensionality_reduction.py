@@ -1,5 +1,6 @@
 from cuml.manifold import TSNE as cumlTSNE
-from cuml import cumlUMAP, cumlPCA
+from cuml import UMAP as cumlUMAP
+from cuml import PCA as cumlPCA
 
 def reduce_dimensions(df, reducer_name, subset, subset_col, num_dimensions=2):
     if subset != None:

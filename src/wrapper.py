@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from dotenv import load_env
+from dotenv import load_dotenv
 from pymongo import MongoClient, DESCENDING
 from utils.FeatureExtractor import update_features
 from utils.label_encoder import label_encoder_target
