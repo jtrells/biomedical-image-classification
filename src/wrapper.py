@@ -26,10 +26,10 @@ def get_data(client, taxonomy, classifier, reducer_name, version='latest', subse
     db = client.classifiers
 
     if (version == 'latest'):
-        rows = db.classifiers.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
+        rows = db.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
         classifier_info = rows[0]
     else:
-        classifier_info = db.classifiers.find_one({'taxonomy': taxonomy,'classifier': classifier, 'version': version})        
+        classifier_info = db.find_one({'taxonomy': taxonomy,'classifier': classifier, 'version': version})        
     
     csv_path = Path(classifier_info) / 'files' / taxonomy / classifier_info.dataset
     subset_col = 'split_set'
