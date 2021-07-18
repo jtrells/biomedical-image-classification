@@ -1,3 +1,4 @@
+import numpy as np
 from cuml.manifold import TSNE as cumlTSNE
 from cuml import UMAP as cumlUMAP
 from cuml import PCA as cumlPCA
@@ -5,7 +6,7 @@ from cuml import PCA as cumlPCA
 def reduce_dimensions(df, reducer_name, subset, subset_col, num_dimensions=2):
     if subset != None:
         df = df[df[subset_col]==subset].reset_index(drop = True)
-    features = df.features.values
+    features = np.vstack(df.features.values)
 
     if reducer_name == 'tsne':
         reducer = cumlTSNE(n_components=num_dimensions, method='barnes_hut')        
