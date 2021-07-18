@@ -11,4 +11,4 @@ def extract_and_update_features(model_path, csv_path, base_img_dir, label_col='l
     df = pd.read_csv(csv_path, sep='\t')
     le_encoder, _ = label_encoder_target(df,target_col=label_col)
 
-    updated_df = update_features(model, le_encoder, csv_path, base_img_dir, seed=42, batch_size=batch_size, num_workers=num_workers)
+    updated_df = update_features(model, le_encoder, csv_path, base_img_dir, label_col=label_col, seed=42, batch_size=batch_size, num_workers=num_workers)
