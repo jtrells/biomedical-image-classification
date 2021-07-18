@@ -197,26 +197,26 @@ def extract_features(fe_model, dataloader):
     return np.vstack((all_features))
 
 
-def update_features(model, label_encoder, csv_path, base_img_dir, label_col='label', seed=42, batch_size=32, num_workers=16):
+def update_features(model, label_encoder, csv_path, base_img_dir, label_col='label', seed=42, batch_size=32, num_workers=16):    
     df        = pd.read_csv(csv_path, sep='\t')    
     transform = [transforms.ToPILImage(),
-                 transforms.Resize((224, 224)),
-                 transforms.ToTensor(),
-                 transforms.Normalize(model.hparams['mean_dataset'], model.hparams['std_dataset'])
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(model.hparams['mean_dataset'], model.hparams['std_dataset'])
                 ]
     transform = transforms.Compose(transform)
     
     dm = ImageDataModule    ( batch_size  = batch_size,
-                              label_encoder    = label_encoder,
-                              data_path        = str(csv_path), 
-                              base_img_dir     = str(base_img_dir),
-                              seed             = seed,   
-                              image_transforms = [transform,transform,transform],
-                              num_workers      = num_workers,
-                              target_class_col ='split_set',
-                              modality_col     = label_col,
-                              path_col         ='img_path',
-                              shuffle_train    = False) # Not Shuffling Train
+                            label_encoder    = label_encoder,
+                            data_path        = str(csv_path), 
+                            base_img_dir     = str(base_img_dir),
+                            seed             = seed,   
+                            image_transforms = [transform,transform,transform],
+                            num_workers      = num_workers,
+                            target_class_col ='split_set',
+                            modality_col     = label_col,
+                            path_col         ='img_path',
+                            shuffle_train    = False) # Not Shuffling Train
     dm.prepare_data()
     dm.setup()    
 
@@ -232,5 +232,4 @@ def update_features(model, label_encoder, csv_path, base_img_dir, label_col='lab
 
     df = pd.concat([df_train, df_val, df_test], sort=False)
     df.to_csv(csv_path, sep='\t')
-    return df
 
