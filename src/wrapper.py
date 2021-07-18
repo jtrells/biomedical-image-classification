@@ -25,12 +25,15 @@ def get_data(client, vil_path, taxonomy, classifier, reducer_name, version='late
     db = client.vil
 
     if (version == 'latest'):
-        rows = db.classifiers.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
-        classifier_info = rows[0]
+        cursor = db.classifiers.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
+        try:
+            classifier_info = cursor.next()
+        except: 
+            raise Exception('no classifier available for parameters')
     else:
         classifier_info = db.classifiers.find_one({'taxonomy': taxonomy,'classifier': classifier, 'version': version})        
     
-    csv_path = Path(vil_path) / 'files' / taxonomy / classifier_info.dataset
+    csv_path = Path(vil_path) / 'files' / taxonomy / classifier_info['dataset']
     subset_col = 'split_set'
     df = pd.read_csv(csv_path, sep='\t')
 
