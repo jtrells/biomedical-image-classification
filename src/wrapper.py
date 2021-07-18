@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-from dotenv import load_dotenv
 from pymongo import MongoClient, DESCENDING
 from utils.FeatureExtractor import update_features
 from utils.label_encoder import label_encoder_target
@@ -22,7 +21,7 @@ def extract_and_update_features(model_path, csv_path, base_img_dir, label_col='l
         return False, e
 
 
-def get_data(client, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):    
+def get_data(client, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):    
     db = client.vil
 
     if (version == 'latest'):
@@ -31,7 +30,7 @@ def get_data(client, taxonomy, classifier, reducer_name, version='latest', subse
     else:
         classifier_info = db.classifiers.find_one({'taxonomy': taxonomy,'classifier': classifier, 'version': version})        
     
-    csv_path = Path(classifier_info) / 'files' / taxonomy / classifier_info.dataset
+    csv_path = Path(vil_path) / 'files' / taxonomy / classifier_info.dataset
     subset_col = 'split_set'
     df = pd.read_csv(csv_path, sep='\t')
 
