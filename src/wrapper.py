@@ -17,9 +17,7 @@ def extract_and_update_features(model_path, parquet_path, base_img_dir, label_co
     #     return False, e
 
 
-def get_data(client, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):    
-    db = client.vil
-
+def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):    
     if (version == 'latest'):
         cursor = db.classifiers.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
         try:
