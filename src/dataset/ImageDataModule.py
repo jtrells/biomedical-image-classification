@@ -8,6 +8,7 @@ from torchvision import transforms
 from .ImageDataset import ImageDataset
 from sklearn.utils import class_weight
 from pytorch_lightning import Trainer,seed_everything
+from pathlib import Path
 
 
 class ImageDataModule(pl.LightningDataModule):
@@ -41,7 +42,11 @@ class ImageDataModule(pl.LightningDataModule):
         
         
     def prepare_data(self):
-        self.df = pd.read_csv(self.data_path, sep='\t')
+        path = Path(self.data_path)
+        if path.suffix.lower() == '.csv':
+            self.df = pd.read_csv(self.data_path, sep='\t')
+        else:
+            self.df = pd.read_parquet(self.data_path)
         # Always run the prepare data in order to get the same results in training
     def set_seed(self):
         seed_everything(self.seed)

@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 from skimage import io
 from skimage.color import gray2rgb
+from pathlib import Path
 
 
 class ImageDataset(torch.utils.data.Dataset): 
@@ -27,7 +28,10 @@ class ImageDataset(torch.utils.data.Dataset):
         self.le = label_encoder
 
         # filter the train, val or test data values
-        self.df = pd.read_csv(csv_data_path, sep='\t')
+        if Path(csv_data_path).suffix.lower() == '.csv':
+            self.df = pd.read_csv(csv_data_path, sep='\t')
+        else:
+            self.df = pd.read_parquet(csv_data_path)
         if type(data_set) == str:
             self.df = self.df[self.df[target_class_col] == data_set]
         else:
