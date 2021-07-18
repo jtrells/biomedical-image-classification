@@ -22,10 +22,7 @@ def extract_and_update_features(model_path, csv_path, base_img_dir, label_col='l
         return False, e
 
 
-def get_data(taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):
-    DB_CONNECTION = os.getenv('DB_CONN')
-
-    client = MongoClient(DB_CONNECTION)
+def get_data(client, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):    
     db = client.classifiers
 
     if (version == 'latest'):
