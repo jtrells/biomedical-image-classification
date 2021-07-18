@@ -9,11 +9,12 @@ from pathlib import Path
 def extract_and_update_features(model_path, parquet_path, base_img_dir, label_col='label', batch_size=32, num_workers=16):
     model = ResNetClass.load_from_checkpoint(model_path)
 
-    try:
-        update_features(model, parquet_path, base_img_dir, label_col=label_col, seed=42, batch_size=batch_size, num_workers=num_workers)
-        return True, None
-    except Exception as e:
-        return False, e
+    update_features(model, parquet_path, base_img_dir, label_col=label_col, seed=42, batch_size=batch_size, num_workers=num_workers)
+    # try:
+    #     update_features(model, parquet_path, base_img_dir, label_col=label_col, seed=42, batch_size=batch_size, num_workers=num_workers)
+    #     return True, None
+    # except Exception as e:
+    #     return False, e
 
 
 def get_data(client, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):    
