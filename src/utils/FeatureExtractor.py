@@ -19,6 +19,7 @@ from sklearn import preprocessing
 from dataset.ImageDataset import ImageDataset, EvalImageDataset
 from torch.utils.data import DataLoader
 from pathlib import Path
+from utils.label_encoder import label_encoder_target
 
 
 def get_vector_representation(data_loader, model, device):
@@ -197,8 +198,10 @@ def extract_features(fe_model, dataloader):
     return np.vstack((all_features))
 
 
-def update_features(model, label_encoder, csv_path, base_img_dir, label_col='label', seed=42, batch_size=32, num_workers=16):    
-    df        = pd.read_csv(csv_path, sep='\t')    
+def update_features(model, parquet_path, base_img_dir, label_col='label', seed=42, batch_size=32, num_workers=16):    
+    df        = pd.read_parquet(parquet_path)
+    label_encoder, _ = label_encoder_target(df,target_col=label_col)
+
     transform = [transforms.ToPILImage(),
                 transforms.Resize((224, 224)),
                 transforms.ToTensor(),
@@ -208,7 +211,7 @@ def update_features(model, label_encoder, csv_path, base_img_dir, label_col='lab
     
     dm = ImageDataModule    ( batch_size  = batch_size,
                             label_encoder    = label_encoder,
-                            data_path        = str(csv_path), 
+                            data_path        = str(parquet_path), 
                             base_img_dir     = str(base_img_dir),
                             seed             = seed,   
                             image_transforms = [transform,transform,transform],
@@ -231,5 +234,5 @@ def update_features(model, label_encoder, csv_path, base_img_dir, label_col='lab
     df_test['features'] = list(extract_features(fe_model, test_dataloader))
 
     df = pd.concat([df_train, df_val, df_test], sort=False)
-    df.to_csv(csv_path, sep='\t')
+    df.to_parquet(parquet_path)
 
