@@ -27,7 +27,7 @@ CORS(app)
 
 ROOT = getenv('FLASK_ROOT')
 
-@app.route('/hello')
+@app.route(ROOT + '/hello')
 def hello():
     return {"message": "hello"}
 
