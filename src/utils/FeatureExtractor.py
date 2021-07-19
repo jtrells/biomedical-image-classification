@@ -192,8 +192,9 @@ def predict(model, dataloader):
         for x, y in dataloader:
             x = x.to('cuda')
             output = model(x)
-            _, preds = torch.max(output, dim=1)
-            predictions.append(preds.cpu())
+            _, preds = torch.max(output, dim=1)            
+            preds = preds.cpu().to_list()
+            predictions += preds
     return predictions
 
 
