@@ -1,20 +1,18 @@
 # pip install -U flask-cors
 # export FLASK_APP=app.py
-# python -m flask run --host=0.0.0.0 -p 6006
+# python -m flask run --host=0.0.0.0 -p 5000
+# flask run --host=0.0.0.0 -p 5000
 #
 import sys
 module_path = './'
 if module_path not in sys.path:
     sys.path.append(module_path)
 
-import pandas as pd
-import numpy as np
-from flask import Flask, jsonify
+from os import getenv
+from flask import Flask
 from flask_cors import CORS
 from markupsafe import escape
-from os import path
 from dotenv import load_dotenv
-from os import getenv
 from flask_pymongo import PyMongo
 
 from wrapper import get_data
@@ -41,6 +39,6 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
 
     vil_path = getenv('VIL')
     df = get_data(mongo.db, vil_path, taxonomy, classifier, projection, version=version, subset=subset, num_dimensions=2)
-    df = df[["img", "img_path", "x", "y", "hits", "label"]]
-    
+    df = df[["img", "img_path", "x", "y", "hits", "label", "prediction"]]
+
     return df.to_json(orient="records")
