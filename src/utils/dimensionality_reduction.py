@@ -3,13 +3,16 @@ from cuml.manifold import TSNE as cumlTSNE
 from cuml import UMAP as cumlUMAP
 from cuml import PCA as cumlPCA
 from cuml.neighbors import NearestNeighbors as cumlNearestNeighbors
-from sklearn.preprocessing import LabelEncoder
 
-def reduce_dimensions(df, reducer_name, subset, subset_col, num_dimensions=2, add_hits=True, label_col='label'):
-    if subset != None:
-        df = df[df[subset_col]==subset].reset_index(drop = True)
-    features = np.vstack(df.features.values)
+def reduce_dimensions(features, reducer_name, num_dimensions=2):
+    """ Reduce the dimensionality of the provided features
 
+    Attributes
+    ----------
+    features: 2D np.array with one N-feature vector per row
+    num_dimensions: dimensions of output vectors
+
+    """
     if reducer_name == 'tsne':
         reducer = cumlTSNE(n_components=num_dimensions, method='barnes_hut')        
     elif reducer_name == 'umap':
@@ -20,15 +23,22 @@ def reduce_dimensions(df, reducer_name, subset, subset_col, num_dimensions=2, ad
         return None
     embeddings = reducer.fit_transform(features)
 
-    if (add_hits):
-        n_hits = calc_neighborhood_hit(df, embeddings, n_neighbors=6, label_col=label_col)
-        return embeddings, n_hits
+    return embeddings
 
-    return embeddings, None
+def calc_neighborhood_hit(df, embeddings, le, n_neighbors=6, label_col='label'):
+    """ Calculate the neighborhood hit for each data point.
 
-def calc_neighborhood_hit(df, embeddings, n_neighbors=6, label_col='label'):    
+    Data points with low scores have a considerable proportion of neighbors with 
+    different predicted labels.
+
+    Attributes
+    -----------
+    df: pandas dataframe
+    embeddings: 2D numpy.ndarray
+    le: label encoder
+    """ 
     neigh = cumlNearestNeighbors(n_neighbors=n_neighbors, algorithm='brute').fit(embeddings)
-    le = LabelEncoder().fit(df[label_col].unique())
+
     n_hits = []
     for neighborhood in neigh.kneighbors(embeddings, n_neighbors + 1, return_distance=False):
         labels  = le.transform(df.iloc[neighborhood][label_col].values)

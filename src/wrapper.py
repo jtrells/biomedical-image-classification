@@ -1,10 +1,11 @@
-import os
 import pandas as pd
+from numpy import vstack
 from pymongo import DESCENDING
 from utils.FeatureExtractor import update_features
-from utils.dimensionality_reduction import reduce_dimensions
+from utils.dimensionality_reduction import reduce_dimensions, calc_neighborhood_hit
 from models.ResNetClass import ResNetClass
 from pathlib import Path
+from sklearn.preprocessing import LabelEncoder
 
 def extract_and_update_features(model_path, parquet_path, base_img_dir, label_col='label', batch_size=32, num_workers=16):
     model = ResNetClass.load_from_checkpoint(model_path)
@@ -31,8 +32,15 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     subset_col = 'split_set'
     df = pd.read_parquet(parquet_path)
 
+    # if aiming for a subset, reduce the dataframe
     subset = None if subset == 'all' else subset
-    features, n_hits = reduce_dimensions(df, reducer_name, subset, subset_col, num_dimensions=num_dimensions, add_hits=add_hits, label_col=label_col)
+    if subset != None:
+        df = df[df[subset_col]==subset].reset_index(drop = True)
+    features = vstack(df.features.values)
+
+    embeddings = reduce_dimensions(features, reducer_name, num_dimensions=num_dimensions)
+    le = LabelEncoder().fit(df[label_col].unique())
+    n_hits = calc_neighborhood_hit(df, embeddings, le, n_neighbors=6, label_col=label_col) if add_hits else None    
 
     return features, n_hits
 
