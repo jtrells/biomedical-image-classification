@@ -183,6 +183,20 @@ def evaluate_projection(DF_UL,model,prev_train_dataset,SEED=42):
     del fe_matrix_train,fe_matrix_unlabeled,embedding_unlabeled
 
 
+def predict(model, dataloader):
+    model.to('cuda')
+    model.eval()
+
+    predictions = []
+    with torch.no_grad():
+        for x, y in dataloader:
+            x = x.to('cuda')
+            output = model(x)
+            _, preds = torch.max(output, dim=1)
+            predictions.append(preds.cpu())
+    return predictions
+
+
 def extract_features(fe_model, dataloader):
     fe_model.to('cuda')
     fe_model.eval()
@@ -232,6 +246,10 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
     df_train['features'] = list(extract_features(fe_model, train_dataloader))
     df_val['features'] = list(extract_features(fe_model, val_dataloader))
     df_test['features'] = list(extract_features(fe_model, test_dataloader))
+
+    df_train['prediction'] = label_encoder.inverse_transform(predict(model, train_dataloader))
+    df_val['prediction'] = label_encoder.inverse_transform(predict(model, val_dataloader))
+    df_test['prediction'] = label_encoder.inverse_transform(predict(model, test_dataloader))
 
     df = pd.concat([df_train, df_val, df_test], sort=False)
     df.to_parquet(parquet_path)
