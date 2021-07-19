@@ -247,7 +247,9 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
     df_val['features'] = list(extract_features(fe_model, val_dataloader))
     df_test['features'] = list(extract_features(fe_model, test_dataloader))
 
-    df_train['prediction'] = label_encoder.inverse_transform(predict(model, train_dataloader))
+    preds_train = predict(model, train_dataloader)
+    print(preds_train)
+    df_train['prediction'] = label_encoder.inverse_transform(preds_train)
     df_val['prediction'] = label_encoder.inverse_transform(predict(model, val_dataloader))
     df_test['prediction'] = label_encoder.inverse_transform(predict(model, test_dataloader))
 
