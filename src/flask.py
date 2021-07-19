@@ -2,6 +2,11 @@
 # export FLASK_APP=app.py
 # python -m flask run --host=0.0.0.0 -p 6006
 #
+import sys
+module_path = './'
+if module_path not in sys.path:
+    sys.path.append(module_path)
+
 import pandas as pd
 import numpy as np
 from flask import Flask
