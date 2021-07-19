@@ -9,7 +9,7 @@ if module_path not in sys.path:
 
 import pandas as pd
 import numpy as np
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from markupsafe import escape
 from os import path
@@ -41,4 +41,4 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
 
     vil_path = getenv('VIL')
     data = get_data(mongo.db, vil_path, taxonomy, classifier, projection, version=version, subset=subset, num_dimensions=2)    
-    return {'data': data.tolist()}
+    return jsonify({'data': data.tolist()})
