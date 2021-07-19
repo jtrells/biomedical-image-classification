@@ -17,7 +17,7 @@ def extract_and_update_features(model_path, parquet_path, base_img_dir, label_co
     #     return False, e
 
 
-def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2):    
+def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2, add_hits=True, label_col='label'):    
     if (version == 'latest'):
         cursor = db.classifiers.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
         try:
@@ -32,9 +32,9 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     df = pd.read_parquet(parquet_path)
 
     subset = None if subset == 'all' else subset
-    features = reduce_dimensions(df, reducer_name, subset, subset_col, num_dimensions=num_dimensions)
+    features, n_hits = reduce_dimensions(df, reducer_name, subset, subset_col, num_dimensions=num_dimensions, add_hits=add_hits, label_col=label_col)
 
-    return features
+    return features, n_hits
 
 
 
