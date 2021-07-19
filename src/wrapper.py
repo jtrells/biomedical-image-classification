@@ -19,6 +19,7 @@ def extract_and_update_features(model_path, parquet_path, base_img_dir, label_co
 
 
 def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2, add_hits=True, label_col='label'):    
+    # num_dimensions should be bigger than 1
     if (version == 'latest'):
         cursor = db.classifiers.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
         try:
@@ -40,9 +41,18 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
 
     embeddings = reduce_dimensions(features, reducer_name, num_dimensions=num_dimensions)
     le = LabelEncoder().fit(df[label_col].unique())
-    n_hits = calc_neighborhood_hit(df, embeddings, le, n_neighbors=6, label_col=label_col) if add_hits else None    
+    # get the neighborhood hit in feature space
+    n_hits = calc_neighborhood_hit(df, features, le, n_neighbors=6, label_col=label_col) if add_hits else None
+    
+    df['x'] = embeddings[:, 0]
+    df['y'] = embeddings[:, 1]
+    df['hits'] = vstack(n_hits)
 
-    return features, n_hits
+    if num_dimensions > 2:
+        print("dimensions > 2 but only retrieving the first three dimensions")
+        df['z'] = embeddings[:, 2]
+    
+    return df
 
 
 

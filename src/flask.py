@@ -40,5 +40,7 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
     subset = escape(subset)
 
     vil_path = getenv('VIL')
-    data = get_data(mongo.db, vil_path, taxonomy, classifier, projection, version=version, subset=subset, num_dimensions=2)    
-    return jsonify({'data': data.tolist()})
+    df = get_data(mongo.db, vil_path, taxonomy, classifier, projection, version=version, subset=subset, num_dimensions=2)
+    df = df[["img", "img_path", "x", "y", "hits", "label"]]
+    
+    return df.to_json(orient="records")
