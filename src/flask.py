@@ -40,5 +40,5 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
     subset = escape(subset)
 
     vil_path = getenv('VIL')
-    data = get_data(mongo.db, vil_path, taxonomy, classifier, projection, version=version, subset=subset, num_dimensions=2)
-    return {'data': data}
+    data = get_data(mongo.db, vil_path, taxonomy, classifier, projection, version=version, subset=subset, num_dimensions=2)    
+    return {'data': data.tolist()}
