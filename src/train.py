@@ -47,7 +47,7 @@ class TrainerWrapper():
         makedirs(self.output_dir, exist_ok=True)
         self.version = self._get_version()        
 
-        df = pd.read_csv(self.data_path, sep='\t')
+        df = pd.read_parquet(self.data_path, sep='\t')
         self.le, _ = label_encoder_target(df, target_col=self.label_col)
 
     def _get_version(self):
@@ -188,7 +188,7 @@ def read_arguments():
     parser.add_argument('--epochs', type=int, default=0, help='if 0, use patience')
     parser.add_argument('--seed', type=int, default=443)
     parser.add_argument('--num_workers', type=int, default=16)
-    parser.add_argument('--dataset_filepath', type=str, help='location of .csv file')
+    parser.add_argument('--dataset_filepath', type=str, help='location of .parquet file')
     parser.add_argument('--images_path', type=str, help='root folder for training images')
     parser.add_argument('--output_dir', type=str, help='where to save results')
     parser.add_argument('--classifier_name', type=str)
