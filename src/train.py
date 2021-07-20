@@ -47,7 +47,7 @@ class TrainerWrapper():
         makedirs(self.output_dir, exist_ok=True)
         self.version = self._get_version()        
 
-        df = pd.read_parquet(self.data_path, sep='\t')
+        df = pd.read_parquet(self.data_path)
         self.le, _ = label_encoder_target(df, target_col=self.label_col)
 
     def _get_version(self):
