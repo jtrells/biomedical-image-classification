@@ -14,11 +14,11 @@ def stratify(df, label_cols=['label', 'source'], n_splits=5):
     mskf = MultilabelStratifiedKFold(n_splits=n_splits, shuffle=False)
     df_train = df[df['split_set']=='TRAIN'].reset_index(drop = True)
     df_test  = df[df['split_set']=='TEST'].reset_index(drop = True)
-    for fold,(train_index, test_index) in enumerate(mskf.split(df_train, df_train[['modality','source']])):
+    for fold,(train_index, test_index) in enumerate(mskf.split(df_train, df_train[label_cols])):
         if fold == 0:   
             df_train.loc[test_index,'split_set'] = 'VAL'
             df_train.loc[train_index,'split_set'] = 'TRAIN'
-    df_concat = pd_concat.concat([df_train,df_test], axis=0).reset_index(drop=True)
+    df_concat = pd_concat.concat([df_train, df_test], axis=0).reset_index(drop=True)
 
     return df_concat
 
@@ -43,7 +43,7 @@ def get_radiology_dataset(csv_path):
     mappings = radiology_mapping()
     df_clef  = convert_clef_openi_dataset(csv_path, 'clef', mappings['clef'])
     df_openi = convert_clef_openi_dataset(csv_path, 'openi', mappings['openi'])
-    df = pd_concat([df_clef, df_openi]).reset_index(drop = True)    
+    df = pd_concat([df_clef, df_openi], axis=0).reset_index(drop = True)    
     return df
 
 
