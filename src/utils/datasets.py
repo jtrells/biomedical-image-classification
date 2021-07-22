@@ -43,7 +43,7 @@ def get_radiology_dataset(csv_path):
     mappings = radiology_mapping()
     df_clef  = convert_clef_openi_dataset(csv_path, 'clef', mappings['clef'])
     df_openi = convert_clef_openi_dataset(csv_path, 'openi', mappings['openi'])
-    df = pd_concat[df_clef, df_openi]
+    df = pd_concat([df_clef, df_openi])
     return stratify(df)
 
 
