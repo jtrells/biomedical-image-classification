@@ -18,7 +18,7 @@ def stratify(df, label_cols=['label', 'source'], n_splits=5):
         if fold == 0:   
             df_train.loc[test_index,'split_set'] = 'VAL'
             df_train.loc[train_index,'split_set'] = 'TRAIN'
-    df_concat = pd_concat.concat([df_train, df_test], axis=0).reset_index(drop=True)
+    df_concat = pd_concat([df_train, df_test], axis=0).reset_index(drop=True)
 
     return df_concat
 
