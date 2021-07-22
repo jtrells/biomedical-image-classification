@@ -35,7 +35,7 @@ def convert_clef_openi_dataset(csv_path, dataset, mapping):
 
     cols = ['img', 'source', 'img_path', 'caption', 'modality', 'split_set']
     df = df[cols]
-    df = df.rename(columns={'modality': 'label'})
+    df = df.rename(columns={'modality': 'label'}).reset_index(drop = True)
     return df
 
 
@@ -43,7 +43,7 @@ def get_radiology_dataset(csv_path):
     mappings = radiology_mapping()
     df_clef  = convert_clef_openi_dataset(csv_path, 'clef', mappings['clef'])
     df_openi = convert_clef_openi_dataset(csv_path, 'openi', mappings['openi'])
-    df = pd_concat([df_clef, df_openi])
+    df = pd_concat([df_clef, df_openi]).reset_index(drop = True)    
     return stratify(df)
 
 
