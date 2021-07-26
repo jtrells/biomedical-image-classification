@@ -148,6 +148,45 @@ def get_graphics_dataset(tinman_path, synthetic_path, chart2020_path):
     return df
 
 
+def get_high_modality_dataset(clef_path, tinman_path, synthetic_path, chart2020_path, plate_path, gel_path, gel_base_path, plate_base_path):
+    mapping = modality_mapping()
+    df_tinman = convert_tinman_dataset(tinman_path, mapping['tinman'])
+    df_clef = convert_clef_openi_dataset(clef_path, 'clef', mapping['clef'])
+    df_openi = convert_clef_openi_dataset(clef_path, 'openi', mapping['openi'])
+
+    df_synthetic = read_csv(synthetic_path)
+    df_synthetic['source'] = 'Chart_Synthetic'
+    df_synthetic['caption'] = ''
+    df_synthetic['label'] = 'GRAPHICS'
+
+    df_chart2020 = read_csv(chart2020_path)
+    df_chart2020['source'] = 'Chart2020'
+    df_chart2020['caption'] = ''
+    df_chart2020['label'] = 'GRAPHICS'
+
+    df_gel = read_csv(gel_path)
+    df_gel['img'] = df_gel["filepath"].str.split("/", expand=True)[2]
+    df_gel['img_path'] = gel_base_path + df_gel['filepath']
+    df_gel['label'] = 'EXPERIMENTAL'
+    df_gel['source'] = 'PUBMED'
+    df_gel['caption'] = ''
+
+    df_plates = read_csv(plate_path)
+    df_plates['img'] = df_plates["filepath"].str.split("/", expand=True)[2]
+    df_plates['img_path'] = plate_base_path + df_plates['filepath']
+    df_plates['label'] = 'EXPERIMENTAL'
+    df_plates['source'] = 'PUBMED'
+    df_plates['caption'] = ''
+
+    columns = ['img', 'source', 'img_path', 'label', 'caption']
+    df = pd_concat([df_tinman[columns], df_clef[columns],
+                   df_openi[columns], df_chart2020[columns],
+                   df_gel[columns], df_plates[columns]], axis=0).reset_index(drop=True)
+
+    df = stratify(df)
+    return df
+
+
 def radiology_mapping():
     return {
         'clef': {
