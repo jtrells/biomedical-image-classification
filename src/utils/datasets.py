@@ -69,14 +69,14 @@ def get_experimental_dataset(clef_csv_path, gel_csv_path, gel_base_path, plate_c
     df_gel['img'] = df_gel["filepath"].str.split("/", expand=True)[2]
     df_gel['img_path'] = gel_base_path + df_gel['filepath']
     df_gel['label'] = 'GEL'
-    df_gel['source'] = 'PUBMED'
+    df_gel['source'] = 'udel-gel'
     df_gel['caption'] = ''
 
     df_plates = read_csv(plate_csv_path)
     df_plates['img'] = df_plates["filepath"].str.split("/", expand=True)[2]
     df_plates['img_path'] = plate_base_path + df_plates['filepath']
     df_plates['label'] = 'PLATE'
-    df_plates['source'] = 'PUBMED'
+    df_plates['source'] = 'udel-plate'
     df_plates['caption'] = ''
 
     df_tinman = convert_tinman_dataset(tinman_path, mapping['tinman'])
@@ -128,10 +128,10 @@ def get_graphics_dataset(tinman_path, synthetic_path, chart2020_path):
     df_tinman = convert_tinman_dataset(tinman_path, mapping['tinman'])
 
     df_synthetic = read_csv(synthetic_path)
-    df_synthetic['source'] = 'Chart_Synthetic'
+    df_synthetic['source'] = 'chart-synth'
 
     df_chart2020 = read_csv(chart2020_path)
-    df_chart2020['source'] = 'Chart2020'
+    df_chart2020['source'] = 'chart-2020'
 
     df_synthetic['label'] = df_synthetic['modality'].replace(
         mapping['synthetic'])
@@ -155,12 +155,12 @@ def get_high_modality_dataset(clef_path, tinman_path, synthetic_path, chart2020_
     df_openi = convert_clef_openi_dataset(clef_path, 'openi', mapping['openi'])
 
     df_synthetic = read_csv(synthetic_path)
-    df_synthetic['source'] = 'Chart_Synthetic'
+    df_synthetic['source'] = 'chart-synth'
     df_synthetic['caption'] = ''
     df_synthetic['label'] = 'GRAPHICS'
 
     df_chart2020 = read_csv(chart2020_path)
-    df_chart2020['source'] = 'Chart2020'
+    df_chart2020['source'] = 'chart-2020'
     df_chart2020['caption'] = ''
     df_chart2020['label'] = 'GRAPHICS'
 
@@ -168,14 +168,14 @@ def get_high_modality_dataset(clef_path, tinman_path, synthetic_path, chart2020_
     df_gel['img'] = df_gel["filepath"].str.split("/", expand=True)[2]
     df_gel['img_path'] = gel_base_path + df_gel['filepath']
     df_gel['label'] = 'EXPERIMENTAL'
-    df_gel['source'] = 'PUBMED'
+    df_gel['source'] = 'udel-gel'
     df_gel['caption'] = ''
 
     df_plates = read_csv(plate_path)
     df_plates['img'] = df_plates["filepath"].str.split("/", expand=True)[2]
     df_plates['img_path'] = plate_base_path + df_plates['filepath']
     df_plates['label'] = 'EXPERIMENTAL'
-    df_plates['source'] = 'PUBMED'
+    df_plates['source'] = 'udel-plate'
     df_plates['caption'] = ''
 
     columns = ['img', 'source', 'img_path', 'label', 'caption']
