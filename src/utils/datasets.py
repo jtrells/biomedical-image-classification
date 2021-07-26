@@ -180,7 +180,7 @@ def get_high_modality_dataset(clef_path, tinman_path, synthetic_path, chart2020_
 
     columns = ['img', 'source', 'img_path', 'label', 'caption']
     df = pd_concat([df_tinman[columns], df_clef[columns],
-                   df_openi[columns], df_chart2020[columns],
+                   df_openi[columns], df_chart2020[columns], df_synthetic[columns],
                    df_gel[columns], df_plates[columns]], axis=0).reset_index(drop=True)
 
     df = stratify(df)
