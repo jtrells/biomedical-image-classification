@@ -403,7 +403,9 @@ def modality_mapping():
             'DRXR': 'RADIOLOGY',
             'DRCT': 'RADIOLOGY',
             'DRUS': 'RADIOLOGY',
-            'DRMR': 'RADIOLOGY'
+            'DRMR': 'RADIOLOGY',
+            'MICROSCOPY': 'MICROSCOPY',
+            'OTHER': 'OTHER'
         },
         'tinman': {
             'MICROSCOPY,FLUORESCENCE,INSITU HYBRIDIZATION': 'MICROSCOPY',
