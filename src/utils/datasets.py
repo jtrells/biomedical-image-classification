@@ -79,8 +79,7 @@ def get_experimental_dataset(clef_csv_path, gel_csv_path, gel_base_path, plate_c
 
     df_tinman = convert_tinman_dataset(tinman_path, mapping['tinman'])
 
-    columns = ['img', 'modality', 'source',
-               'img_path', 'label', 'split_set']
+    columns = ['img', 'label', 'source', 'img_path', 'split_set']
     df = pd_concat([df_clef[columns], df_gel[columns],
                    df_plates[columns], df_tinman[columns]], axis=0).reset_index(drop=True)
     df = stratify(df)
