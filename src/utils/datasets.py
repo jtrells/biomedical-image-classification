@@ -228,7 +228,7 @@ def electron_mapping():
         },
         'clef': {
             'DMEL': 'ELECTRON',
-            'DMTR': 'TRANMISSION'
+            'DMTR': 'TRANSMISSION'
         }
     }
 
