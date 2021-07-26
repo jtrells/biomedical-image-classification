@@ -133,15 +133,15 @@ def get_graphics_dataset(tinman_path, synthetic_path, chart2020_path):
     df_chart2020 = read_csv(chart2020_path)
     df_chart2020['source'] = 'Chart2020'
 
-    df_synthetic['modality'] = df_synthetic['modality'].replace(
+    df_synthetic['label'] = df_synthetic['modality'].replace(
         mapping['synthetic'])
-    df_chart2020['modality'] = df_chart2020['modality'].replace(
+    df_chart2020['label'] = df_chart2020['modality'].replace(
         mapping['chart2020'])
 
     df_synthetic['caption'] = ''
     df_chart2020['caption'] = ''
 
-    columns = ['img', 'modality', 'source', 'img_path', 'modality', 'caption']
+    columns = ['img', 'source', 'img_path', 'label', 'caption']
     df = pd_concat([df_synthetic[columns], df_chart2020[columns],
                    df_tinman[columns]], axis=0).reset_index(drop=True)
     df = stratify(df)
