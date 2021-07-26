@@ -75,7 +75,7 @@ def get_experimental_dataset(clef_csv_path, gel_csv_path, gel_base_path, plate_c
     df_plates = read_csv(plate_csv_path)
     df_plates['img'] = df_plates["filepath"].str.split("/", expand=True)[2]
     df_plates['img_path'] = plate_base_path + df_plates['filepath']
-    df_plates['label'] = 'PLATES'
+    df_plates['label'] = 'PLATE'
     df_plates['source'] = 'PUBMED'
     df_plates['caption'] = ''
 
