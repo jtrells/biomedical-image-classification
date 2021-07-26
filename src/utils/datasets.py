@@ -67,13 +67,13 @@ def get_experimental_dataset(clef_csv_path, gel_csv_path, gel_base_path, plate_c
 
     df_gel = read_csv(gel_csv_path)
     df_gel['img'] = df_gel["filepath"].str.split("/", expand=True)[2]
-    df_gel['img_path'] = path.join(gel_base_path, df_gel['filepath'])
+    df_gel['img_path'] = gel_base_path + df_gel['filepath']
     df_gel['modality'] = 'GEL'
     df_gel['source'] = 'PUBMED'
 
     df_plates = read_csv(plate_csv_path)
     df_plates['img'] = df_plates["filepath"].str.split("/", expand=True)[2]
-    df_plates['img_path'] = path.join(plate_base_path, df_plates['filepath'])
+    df_plates['img_path'] = plate_base_path + df_plates['filepath']
     df_plates['modality'] = 'PLATES'
     df_plates['source'] = 'PUBMED'
 
