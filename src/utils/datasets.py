@@ -227,7 +227,7 @@ def electron_mapping():
             'MICROSCOPY,ELECTRON,TRANSMISSION': 'TRANSMISSION'
         },
         'clef': {
-            'DMEL': 'ELECTRON',
+            'DMEL': 'SCANNING',
             'DMTR': 'TRANSMISSION'
         }
     }
