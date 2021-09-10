@@ -31,7 +31,7 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
             'gtr': row['label'],
             'pred': None,
             'set': row['split_set'],
-            'hits': row['hit'],
+            # 'hits': row['hit'],
             'feats': row['features'],
             'probs': None,
             'alms': None,
