@@ -28,7 +28,7 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
             'path': row['img_path'],
             'src': row['source'],
             'cap': row['caption'],
-            'gtr': row['modality'],
+            'gtr': row['label'],
             'pred': None,
             'set': row['split_set'],
             'hits': row['hit'],
@@ -37,7 +37,12 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
             'alms': None,
             'allc': None,
             'alen': None,
-            'doc': '1' if is_curated else None
+            'doc': row['img_path'].split('//')[-3] if is_curated else None,
+            'crop': row['needsCropping'] if is_curated else None,
+            'comp': row['isCompound'] if is_curated else None,
+            'ovcrop': row['isOvercropped'] if is_curated else None,
+            'ovfrag': row['isOverfragmented'] if is_curated else None,
+            'bbox': [row['x0'], row['y0'], row['x1'], row['y1']] if is_curated else None,
         }
 
         image_id = images.insert_one(image)
