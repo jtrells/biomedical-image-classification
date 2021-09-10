@@ -32,7 +32,7 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
             'pred': None,
             'set': row['split_set'],
             # 'hits': row['hit'],
-            'feats': row['features'],
+            'feats': row['features'].tolist(),
             'probs': None,
             'alms': None,
             'allc': None,
