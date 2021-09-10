@@ -3,8 +3,6 @@ from pandas import read_csv
 from os import path, read
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 
-# There are no modalities for
-
 
 def stratify(df, label_cols=['label', 'source'], n_splits=5):
     mskf = MultilabelStratifiedKFold(n_splits=n_splits, shuffle=False)
@@ -68,14 +66,14 @@ def get_experimental_dataset(clef_csv_path, gel_csv_path, gel_base_path, plate_c
     df_gel = read_csv(gel_csv_path)
     df_gel['img'] = df_gel["filepath"].str.split("/", expand=True)[2]
     df_gel['img_path'] = gel_base_path + df_gel['filepath']
-    df_gel['label'] = 'GEL'
+    df_gel['label'] = 'exp.gel'
     df_gel['source'] = 'udel-gel'
     df_gel['caption'] = ''
 
     df_plates = read_csv(plate_csv_path)
     df_plates['img'] = df_plates["filepath"].str.split("/", expand=True)[2]
     df_plates['img_path'] = plate_base_path + df_plates['filepath']
-    df_plates['label'] = 'PLATE'
+    df_plates['label'] = 'exp.pla'
     df_plates['source'] = 'udel-plate'
     df_plates['caption'] = ''
 
@@ -157,24 +155,24 @@ def get_high_modality_dataset(clef_path, tinman_path, synthetic_path, chart2020_
     df_synthetic = read_csv(synthetic_path)
     df_synthetic['source'] = 'chart-synth'
     df_synthetic['caption'] = ''
-    df_synthetic['label'] = 'GRAPHICS'
+    df_synthetic['label'] = 'gra'
 
     df_chart2020 = read_csv(chart2020_path)
     df_chart2020['source'] = 'chart-2020'
     df_chart2020['caption'] = ''
-    df_chart2020['label'] = 'GRAPHICS'
+    df_chart2020['label'] = 'gra'
 
     df_gel = read_csv(gel_path)
     df_gel['img'] = df_gel["filepath"].str.split("/", expand=True)[2]
     df_gel['img_path'] = gel_base_path + df_gel['filepath']
-    df_gel['label'] = 'EXPERIMENTAL'
+    df_gel['label'] = 'exp'
     df_gel['source'] = 'udel-gel'
     df_gel['caption'] = ''
 
     df_plates = read_csv(plate_path)
     df_plates['img'] = df_plates["filepath"].str.split("/", expand=True)[2]
     df_plates['img_path'] = plate_base_path + df_plates['filepath']
-    df_plates['label'] = 'EXPERIMENTAL'
+    df_plates['label'] = 'exp'
     df_plates['source'] = 'udel-plate'
     df_plates['caption'] = ''
 
@@ -190,18 +188,18 @@ def get_high_modality_dataset(clef_path, tinman_path, synthetic_path, chart2020_
 def radiology_mapping():
     return {
         'clef': {
-            'DRXR': 'X-RAY',
-            'DRUS': 'ULTRASOUND',
-            'DRAN': 'ANGIOGRAPHY',
-            'DRMR': 'CT/MRI/PET',
-            'DRPE': 'CT/MRI/PET',
-            'DRCO': 'OTHER'
+            'DRXR': 'rad.xra',
+            'DRUS': 'rad.uls',
+            'DRAN': 'rad.ang',
+            'DRMR': 'rad.cmp',
+            'DRPE': 'rad.cmp',
+            'DRCO': 'rad.oth'
         },
         'openi': {
-            'DRXR': 'X-RAY',
-            'DRCT': 'CT/MRI/PET',
-            'DRUS': 'ULTRASOUND',
-            'DRMR': 'CT/MRI/PET'
+            'DRXR': 'rad.xra',
+            'DRCT': 'rad.cmp',
+            'DRUS': 'rad.uls',
+            'DRMR': 'rad.cmp'
         }
     }
 
@@ -209,14 +207,14 @@ def radiology_mapping():
 def experimental_mapping():
     return {
         'clef': {
-            'GGEL': 'GEL'
+            'GGEL': 'exp.gel'
         },
         'tinman': {
-            'EXPERIMENTAL,GEL,NORTHERN BLOT': 'GEL',
-            'EXPERIMENTAL,GEL,OTHER': 'GEL',
-            'EXPERIMENTAL,GEL,RT_PCR': 'GEL',
-            'EXPERIMENTAL,GEL,WESTERN BLOT': 'GEL',
-            'EXPERIMENTAL,PLATE': 'PLATE'
+            'EXPERIMENTAL,GEL,NORTHERN BLOT': 'exp.gel',
+            'EXPERIMENTAL,GEL,OTHER': 'exp.gel',
+            'EXPERIMENTAL,GEL,RT_PCR': 'exp.gel',
+            'EXPERIMENTAL,GEL,WESTERN BLOT': 'exp.gel',
+            'EXPERIMENTAL,PLATE': 'exp.pla'
         }
     }
 
@@ -224,10 +222,10 @@ def experimental_mapping():
 def gel_mapping():
     return {
         'tinman': {
-            'EXPERIMENTAL,GEL,NORTHERN BLOT': 'NORTHERN BLOT',
-            'EXPERIMENTAL,GEL,OTHER': 'OTHER',
-            'EXPERIMENTAL,GEL,RT_PCR': 'RT_PCR',
-            'EXPERIMENTAL,GEL,WESTERN BLOT': 'WESTERN BLOT'
+            'EXPERIMENTAL,GEL,NORTHERN BLOT': 'exp.gel.nor',
+            'EXPERIMENTAL,GEL,OTHER': 'exp.gel.oth',
+            'EXPERIMENTAL,GEL,RT_PCR': 'exp.gel.rpc',
+            'EXPERIMENTAL,GEL,WESTERN BLOT': 'exp.gel.wes'
         }
     }
 
@@ -235,24 +233,24 @@ def gel_mapping():
 def microscopy_mapping():
     return {
         'clef': {
-            'DMLI': 'LIGHT',
-            'DMFL': 'FLUORESCENCE',
-            'DMTR': 'ELECTRON',
-            'DMEL': 'ELECTRON'
+            'DMLI': 'mic.lig',
+            'DMFL': 'mic.flu',
+            'DMTR': 'mic.ele',
+            'DMEL': 'mic.ele'
         },
         'tinman': {
-            'MICROSCOPY,FLUORESCENCE,INSITU HYBRIDIZATION': 'FLUORESCENCE',
-            'MICROSCOPY,FLUORESCENCE,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'FLUORESCENCE',
-            'MICROSCOPY,FLUORESCENCE,EFIC': 'FLUORESCENCE',
-            'MICROSCOPY,FLUORESCENCE,WHOLE MOUNT': 'FLUORESCENCE',
-            'MICROSCOPY,FLUORESCENCE,OTHER': 'FLUORESCENCE',
-            'MICROSCOPY,LIGHT,INSITU HYBRIDIZATION': 'LIGHT',
-            'MICROSCOPY,LIGHT,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'LIGHT',
-            'MICROSCOPY,LIGHT,WHOLE MOUNT': 'LIGHT',
-            'MICROSCOPY,LIGHT,OTHER': 'LIGHT',
-            'MICROSCOPY,ELECTRON,OTHER': 'ELECTRON',
-            'MICROSCOPY,ELECTRON,SCANNING': 'ELECTRON',
-            'MICROSCOPY,ELECTRON,TRANSMISSION': 'ELECTRON'
+            'MICROSCOPY,FLUORESCENCE,INSITU HYBRIDIZATION': 'mic.flu',
+            'MICROSCOPY,FLUORESCENCE,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'mic.flu',
+            'MICROSCOPY,FLUORESCENCE,EFIC': 'mic.flu',
+            'MICROSCOPY,FLUORESCENCE,WHOLE MOUNT': 'mic.flu',
+            'MICROSCOPY,FLUORESCENCE,OTHER': 'mic.flu',
+            'MICROSCOPY,LIGHT,INSITU HYBRIDIZATION': 'mic.lig',
+            'MICROSCOPY,LIGHT,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'mic.lig',
+            'MICROSCOPY,LIGHT,WHOLE MOUNT': 'mic.lig',
+            'MICROSCOPY,LIGHT,OTHER': 'mic.lig',
+            'MICROSCOPY,ELECTRON,OTHER': 'mic.ele',
+            'MICROSCOPY,ELECTRON,SCANNING': 'mic.ele',
+            'MICROSCOPY,ELECTRON,TRANSMISSION': 'mic.ele'
         }
     }
 
@@ -260,13 +258,13 @@ def microscopy_mapping():
 def electron_mapping():
     return {
         'tinman': {
-            'MICROSCOPY,ELECTRON,OTHER': 'OTHER',
-            'MICROSCOPY,ELECTRON,SCANNING': 'SCANNING',
-            'MICROSCOPY,ELECTRON,TRANSMISSION': 'TRANSMISSION'
+            'MICROSCOPY,ELECTRON,OTHER': 'mic.ele.oth',
+            'MICROSCOPY,ELECTRON,SCANNING': 'mic.ele.sca',
+            'MICROSCOPY,ELECTRON,TRANSMISSION': 'mic.ele.tra'
         },
         'clef': {
-            'DMEL': 'SCANNING',
-            'DMTR': 'TRANSMISSION'
+            'DMEL': 'mic.ele.sca',
+            'DMTR': 'mic.ele.tra'
         }
     }
 
@@ -274,15 +272,15 @@ def electron_mapping():
 def light_fluorescence_mapping():
     return {
         'tinman': {
-            'MICROSCOPY,FLUORESCENCE,INSITU HYBRIDIZATION': 'INSITU HYBRIDIZATION',
-            'MICROSCOPY,FLUORESCENCE,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'REPORTER GENES AND IMMUNOHISTOCHEMISTRY',
-            'MICROSCOPY,FLUORESCENCE,EFIC': 'EFIC',
-            'MICROSCOPY,FLUORESCENCE,WHOLE MOUNT': 'WHOLE MOUNT',
-            'MICROSCOPY,FLUORESCENCE,OTHER': 'OTHER',
-            'MICROSCOPY,LIGHT,INSITU HYBRIDIZATION': 'INSITU HYBRIDIZATION',
-            'MICROSCOPY,LIGHT,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'REPORTER GENES AND IMMUNOHISTOCHEMISTRY',
-            'MICROSCOPY,LIGHT,WHOLE MOUNT': 'WHOLE MOUNT',
-            'MICROSCOPY,LIGHT,OTHER': 'OTHER',
+            'MICROSCOPY,FLUORESCENCE,INSITU HYBRIDIZATION': 'mic.flu.ins',
+            'MICROSCOPY,FLUORESCENCE,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'mic.flu.rep',
+            'MICROSCOPY,FLUORESCENCE,EFIC': 'mic.flu.efi',
+            'MICROSCOPY,FLUORESCENCE,WHOLE MOUNT': 'mic.flu.who',
+            'MICROSCOPY,FLUORESCENCE,OTHER': 'mic.flu.oth',
+            'MICROSCOPY,LIGHT,INSITU HYBRIDIZATION': 'mic.lig.ins',
+            'MICROSCOPY,LIGHT,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'mic.lig.rep',
+            'MICROSCOPY,LIGHT,WHOLE MOUNT': 'mic.lig.who',
+            'MICROSCOPY,LIGHT,OTHER': 'mic.lig.oth',
         }
     }
 
@@ -290,14 +288,14 @@ def light_fluorescence_mapping():
 def molecular_mapping():
     return {
         'clef': {
-            'GCHE': 'CHEMICAL STRUCTURE',
-            'GGEN': 'DNA SEQUENCE',
+            'GCHE': 'mol.che',
+            'GGEN': 'mol.dna',
         },
         'tinman': {
-            'MOLECULAR STRUCTURE,3D STRUCTURE': '3D STRUCTURE',
-            'MOLECULAR STRUCTURE,CHEMICAL STRUCTURE': 'CHEMICAL STRUCTURE',
-            'MOLECULAR STRUCTURE,DNA': 'DNA SEQUENCE',
-            'MOLECULAR STRUCTURE,PROTEIN': 'PROTEIN SEQUENCE'
+            'MOLECULAR STRUCTURE,3D STRUCTURE': 'mol.3ds',
+            'MOLECULAR STRUCTURE,CHEMICAL STRUCTURE': 'mol.che',
+            'MOLECULAR STRUCTURE,DNA': 'mol.dna',
+            'MOLECULAR STRUCTURE,PROTEIN': 'mol.pro'
         }
     }
 
@@ -305,9 +303,9 @@ def molecular_mapping():
 def photography_mapping():
     return {
         'clef': {
-            'DRDM': 'DERMATOLOGY/SKIN',
-            'DVEN': 'ORGANS/BODY PARTS',
-            'DVOR': 'ORGANS/BODY PARTS'
+            'DRDM': 'pho.der',  # DERMATOLOGY/SKIN
+            'DVEN': 'pho.obp',  # ORGANS/BODY PARTS
+            'DVOR': 'pho.obp'
         }
     }
 
@@ -315,47 +313,47 @@ def photography_mapping():
 def graphics_mapping():
     return {
         'clef': {
-            'GFLO': 'FLOWCHART',
-            'D3DR': '3D RECONSTRUCTION',
-            'DSEM': 'SIGNALS/WAVES',
-            'DSEE': 'SIGNALS/WAVES',
-            'DSEC': 'SIGNALS/WAVES',
+            'GFLO': 'gra.flow',      # 'FLOWCHART',
+            'D3DR': 'gra.3dr',       # '3D RECONSTRUCTION',
+            'DSEM': 'gra.sig',       # SIGNALS/WAVES',
+            'DSEE': 'gra.sig',
+            'DSEC': 'gra.sig',
         },
         'tinman': {
-            'GRAPHICS,FLOWCHART': 'FLOWCHART',
-            'GRAPHICS,HISTOGRAM': 'HISTOGRAM',
-            'GRAPHICS,LINECHART': 'LINECHART',
-            'GRAPHICS,OTHER': 'OTHER',
-            'GRAPHICS,SCATTERPLOT': 'SCATTERPLOT'
+            'GRAPHICS,FLOWCHART': 'gra.flow',  # 'FLOWCHART',
+            'GRAPHICS,HISTOGRAM': 'gra.his',  # 'HISTOGRAM',
+            'GRAPHICS,LINECHART': 'gra.lin',  # 'LINECHART',
+            'GRAPHICS,OTHER': 'gra.oth',  # 'OTHER',
+            'GRAPHICS,SCATTERPLOT': 'gra.sca',  # 'SCATTERPLOT'
         },
         'synthetic': {
-            'Scatter': 'SCATTERPLOT',
-            'Grouped horizontal bar': 'HISTOGRAM',
-            'Grouped vertical bar': 'HISTOGRAM',
-            'Horizontal box': 'OTHER',
-            'Vertical box': 'OTHER',
-            'Stacked horizontal bar': 'HISTOGRAM',
-            'Stacked vertical bar': 'HISTOGRAM',
-            'Line': 'LINECHART',
-            'Pie': 'OTHER',
-            'Donut': 'OTHER'
+            'Scatter': 'gra.sca',
+            'Grouped horizontal bar': 'gra.his',
+            'Grouped vertical bar': 'gra.his',
+            'Horizontal box': 'gra.oth',
+            'Vertical box': 'gra.oth',
+            'Stacked horizontal bar': 'gra.his',
+            'Stacked vertical bar': 'gra.his',
+            'Line': 'gra.lin',
+            'Pie': 'gra.oth',
+            'Donut': 'gra.oth'
         },
         'chart2020': {
-            'area': 'OTHER',
-            'heatmap': 'OTHER',
-            'horizontal_bar': 'HISTOGRAM',
-            'horizontal_interval': 'OTHER',
-            'line': 'LINECHART',
-            'manhattan': 'OTHER',
-            'map': 'OTHER',
-            'pie': 'OTHER',
-            'scatter': 'SCATTERPLOT',
-            'scatter-line': 'SCATTERPLOT',
-            'surface': 'OTHER',
-            'venn': 'OTHER',
-            'vertical_bar': 'HISTOGRAM',
-            'vertical_box': 'OTHER',
-            'vertical_interval': 'OTHER'
+            'area': 'gra.oth',
+            'heatmap': 'gra.oth',
+            'horizontal_bar': 'gra.his',
+            'horizontal_interval': 'gra.oth',
+            'line': 'gra.lin',
+            'manhattan': 'gra.oth',
+            'map': 'gra.oth',
+            'pie': 'gra.oth',
+            'scatter': 'gra.sca',
+            'scatter-line': 'gra.sca',
+            'surface': 'gra.oth',
+            'venn': 'gra.oth',
+            'vertical_bar': 'gra.his',
+            'vertical_box': 'gra.oth',
+            'vertical_interval': 'gra.oth'
         }
     }
 
@@ -363,82 +361,82 @@ def graphics_mapping():
 def modality_mapping():
     return {
         'clef': {
-            'GFLO': 'GRAPHICS',
-            'D3DR': 'GRAPHICS',
-            'DSEM': 'GRAPHICS',
-            'DSEE': 'GRAPHICS',
-            'DSEC': 'GRAPHICS',
-            'GFIG': 'GRAPHICS',
+            'GFLO': 'gra',  # GRAPHICS
+            'D3DR': 'gra',
+            'DSEM': 'gra',
+            'DSEE': 'gra',
+            'DSEC': 'gra',
+            'GFIG': 'gra',
 
-            'DRDM': 'PHOTOGRAPHY',
-            'DVEN': 'PHOTOGRAPHY',
-            'DVOR': 'PHOTOGRAPHY',
+            'DRDM': 'pho',  # PHOTOGRAPHY
+            'DVEN': 'pho',
+            'DVOR': 'pho',
 
-            'GCHE': 'MOLECULAR STRUCTURE',
-            'GGEN': 'MOLECULAR STRUCTURE',
+            'GCHE': 'mol',  # 'MOLECULAR STRUCTURE',
+            'GGEN': 'mol',
 
-            'DMEL': 'MICROSCOPY',
-            'DMTR': 'MICROSCOPY',
-            'DMFL': 'MICROSCOPY',
-            'DMLI': 'MICROSCOPY',
+            'DMEL': 'mic',
+            'DMTR': 'mic',
+            'DMFL': 'mic',
+            'DMLI': 'mic',
 
-            'GGEL': 'EXPERIMENTAL',
+            'GGEL': 'exp',
 
-            'DRXR': 'RADIOLOGY',
-            'DRCT': 'RADIOLOGY',
-            'DRUS': 'RADIOLOGY',
-            'DRMR': 'RADIOLOGY',
-            'DRCO': 'RADIOLOGY',
-            'DRPE': 'RADIOLOGY',
+            'DRXR': 'rad',
+            'DRCT': 'rad',
+            'DRUS': 'rad',
+            'DRMR': 'rad',
+            'DRCO': 'rad',
+            'DRPE': 'rad',
 
-            'GTAB': 'OTHER',
-            'GPLI': 'OTHER',
-            'GSCR': 'OTHER',
-            'GNCP': 'OTHER',
-            'GSYS': 'OTHER',
-            'GMAT': 'OTHER',
-            'GHDR': 'OTHER',
+            'GTAB': 'oth',
+            'GPLI': 'oth',
+            'GSCR': 'oth',
+            'GNCP': 'oth',
+            'GSYS': 'oth',
+            'GMAT': 'oth',
+            'GHDR': 'oth',
         },
         'openi': {
-            'DRXR': 'RADIOLOGY',
-            'DRCT': 'RADIOLOGY',
-            'DRUS': 'RADIOLOGY',
-            'DRMR': 'RADIOLOGY',
-            'MICROSCOPY': 'MICROSCOPY',
-            'OTHER': 'OTHER'
+            'DRXR': 'rad',
+            'DRCT': 'rad',
+            'DRUS': 'rad',
+            'DRMR': 'rad',
+            'MICROSCOPY': 'mic',
+            'OTHER': 'oth'
         },
         'tinman': {
-            'MICROSCOPY,FLUORESCENCE,INSITU HYBRIDIZATION': 'MICROSCOPY',
-            'MICROSCOPY,FLUORESCENCE,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'MICROSCOPY',
-            'MICROSCOPY,FLUORESCENCE,EFIC': 'MICROSCOPY',
-            'MICROSCOPY,FLUORESCENCE,WHOLE MOUNT': 'MICROSCOPY',
-            'MICROSCOPY,FLUORESCENCE,OTHER': 'MICROSCOPY',
-            'MICROSCOPY,LIGHT,INSITU HYBRIDIZATION': 'MICROSCOPY',
-            'MICROSCOPY,LIGHT,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'MICROSCOPY',
-            'MICROSCOPY,LIGHT,WHOLE MOUNT': 'MICROSCOPY',
-            'MICROSCOPY,LIGHT,OTHER': 'MICROSCOPY',
-            'MICROSCOPY,ELECTRON,OTHER': 'MICROSCOPY',
-            'MICROSCOPY,ELECTRON,SCANNING': 'MICROSCOPY',
-            'MICROSCOPY,ELECTRON,TRANSMISSION': 'MICROSCOPY',
+            'MICROSCOPY,FLUORESCENCE,INSITU HYBRIDIZATION': 'mic',
+            'MICROSCOPY,FLUORESCENCE,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'mic',
+            'MICROSCOPY,FLUORESCENCE,EFIC': 'mic',
+            'MICROSCOPY,FLUORESCENCE,WHOLE MOUNT': 'mic',
+            'MICROSCOPY,FLUORESCENCE,OTHER': 'mic',
+            'MICROSCOPY,LIGHT,INSITU HYBRIDIZATION': 'mic',
+            'MICROSCOPY,LIGHT,REPORTER GENES AND IMMUNOHISTOCHEMISTRY': 'mic',
+            'MICROSCOPY,LIGHT,WHOLE MOUNT': 'mic',
+            'MICROSCOPY,LIGHT,OTHER': 'mic',
+            'MICROSCOPY,ELECTRON,OTHER': 'mic',
+            'MICROSCOPY,ELECTRON,SCANNING': 'mic',
+            'MICROSCOPY,ELECTRON,TRANSMISSION': 'mic',
 
-            'GRAPHICS,FLOWCHART': 'GRAPHICS',
-            'GRAPHICS,HISTOGRAM': 'GRAPHICS',
-            'GRAPHICS,LINECHART': 'GRAPHICS',
-            'GRAPHICS,OTHER': 'GRAPHICS',
-            'GRAPHICS,SCATTERPLOT': 'GRAPHICS',
+            'GRAPHICS,FLOWCHART': 'gra',
+            'GRAPHICS,HISTOGRAM': 'gra',
+            'GRAPHICS,LINECHART': 'gra',
+            'GRAPHICS,OTHER': 'gra',
+            'GRAPHICS,SCATTERPLOT': 'gra',
 
-            'MOLECULAR STRUCTURE,3D STRUCTURE': 'MOLECULAR STRUCTURE',
-            'MOLECULAR STRUCTURE,CHEMICAL STRUCTURE': 'MOLECULAR STRUCTURE',
-            'MOLECULAR STRUCTURE,DNA': 'MOLECULAR STRUCTURE',
-            'MOLECULAR STRUCTURE,PROTEIN': 'MOLECULAR STRUCTURE',
+            'MOLECULAR STRUCTURE,3D STRUCTURE': 'mol',
+            'MOLECULAR STRUCTURE,CHEMICAL STRUCTURE': 'mol',
+            'MOLECULAR STRUCTURE,DNA': 'mol',
+            'MOLECULAR STRUCTURE,PROTEIN': 'mol',
 
-            'EXPERIMENTAL,GEL,NORTHERN BLOT': 'EXPERIMENTAL',
-            'EXPERIMENTAL,GEL,OTHER': 'EXPERIMENTAL',
-            'EXPERIMENTAL,GEL,RT_PCR': 'EXPERIMENTAL',
-            'EXPERIMENTAL,GEL,WESTERN BLOT': 'EXPERIMENTAL',
-            'EXPERIMENTAL,PLATE': 'EXPERIMENTAL',
+            'EXPERIMENTAL,GEL,NORTHERN BLOT': 'exp',
+            'EXPERIMENTAL,GEL,OTHER': 'exp',
+            'EXPERIMENTAL,GEL,RT_PCR': 'exp',
+            'EXPERIMENTAL,GEL,WESTERN BLOT': 'exp',
+            'EXPERIMENTAL,PLATE': 'exp',
 
-            'PHOTOGRAPHY': 'PHOTOGRAPHY',
-            'OTHER': 'OTHER'
+            'PHOTOGRAPHY': 'pho',
+            'OTHER': 'oth'
         }
     }
