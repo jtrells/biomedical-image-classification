@@ -4,6 +4,7 @@ from os import getenv
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from argparse import ArgumentParser
+from tqdm import tqdm
 
 
 def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
@@ -25,7 +26,7 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
     count = 0
     new_images = []
     images_to_update = []
-    for _, row in df.iterrows():
+    for _, row in tqdm(df.iterrows(), total=df.shape[0]):
         existing_image = images.find_one({'path': row['img_path']})
         if existing_image:            
             existing_image['classifiers'].append(classifier)
@@ -59,7 +60,7 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
             # image_id = images.insert_one(image)
             new_images.append(image)
         count += 1
-    results_insert = images.insertMany(new_images)
+    results_insert = images.insert_many(new_images)
     print(f'{count} images inserted from {parquet_path}')
 
 
