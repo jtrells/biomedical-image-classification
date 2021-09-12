@@ -17,35 +17,44 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
     '''
     path = Path(parquet_path)
     df = pd.read_parquet(path)
+    classifier = parquet_path.split("_")[1]
 
     client = MongoClient(conn_uri)
     images = client['vil'].images
 
     count = 0
     for _, row in df.iterrows():
-        image = {
-            'img': row['img'],
-            'path': row['img_path'],
-            'src': row['source'],
-            'cap': row['caption'],
-            'gtr': row['label'],
-            'pred': None,
-            'set': row['split_set'],
-            # 'hits': row['hit'],
-            'feats': row['features'].tolist(),
-            'probs': None,
-            'alms': None,
-            'allc': None,
-            'alen': None,
-            'doc': row['img_path'].split('//')[-3] if is_curated else None,
-            'crop': row['needsCropping'] if is_curated else None,
-            'comp': row['isCompound'] if is_curated else None,
-            'ovcrop': row['isOvercropped'] if is_curated else None,
-            'ovfrag': row['isOverfragmented'] if is_curated else None,
-            'bbox': [row['x0'], row['y0'], row['x1'], row['y1']] if is_curated else None,
-        }
+        existing_image = images.find_one({'path': row['img_path']})
+        if existing_image:            
+            existing_image.classifiers.append(classifier)
+            images.replace_one(
+                {'path': row['img_path']}, 
+                {'classifier'}: existing_image.classifiers)
+        else:
+            image = {
+                'img': row['img'],
+                'path': row['img_path'],
+                'src': row['source'],
+                'cap': row['caption'],
+                'gtr': row['label'],
+                'pred': None,
+                'set': row['split_set'],
+                # 'hits': row['hit'],
+                'feats': row['features'].tolist(),
+                'probs': None,
+                'alms': None,
+                'allc': None,
+                'alen': None,
+                'classifiers': [classifier],
+                'doc': row['img_path'].split('//')[-3] if is_curated else None,
+                'crop': row['needsCropping'] if is_curated else None,
+                'comp': row['isCompound'] if is_curated else None,
+                'ovcrop': row['isOvercropped'] if is_curated else None,
+                'ovfrag': row['isOverfragmented'] if is_curated else None,
+                'bbox': [row['x0'], row['y0'], row['x1'], row['y1']] if is_curated else None,
+            }
 
-        image_id = images.insert_one(image)
+            image_id = images.insert_one(image)
         count += 1
     print(f'{count} images inserted from {parquet_path}')
 
