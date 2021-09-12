@@ -29,7 +29,7 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
             existing_image['classifiers'].append(classifier)
             images.replace_one(
                 {'path': row['img_path']}, 
-                {'classifiers': existing_image.classifiers})
+                {'classifiers': existing_image['classifiers']})
         else:
             image = {
                 'img': row['img'],
