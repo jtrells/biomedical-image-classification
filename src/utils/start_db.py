@@ -23,6 +23,8 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
     images = client['vil'].images
 
     count = 0
+    new_images = []
+    images_to_update = []
     for _, row in df.iterrows():
         existing_image = images.find_one({'path': row['img_path']})
         if existing_image:            
@@ -54,8 +56,10 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
                 'bbox': [row['x0'], row['y0'], row['x1'], row['y1']] if is_curated else None,
             }
 
-            image_id = images.insert_one(image)
+            # image_id = images.insert_one(image)
+            new_images.append(image)
         count += 1
+    results_insert = images.insertMany(new_images)
     print(f'{count} images inserted from {parquet_path}')
 
 
