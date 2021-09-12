@@ -26,7 +26,7 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
     for _, row in df.iterrows():
         existing_image = images.find_one({'path': row['img_path']})
         if existing_image:            
-            existing_image.classifiers.append(classifier)
+            existing_image['classifiers'].append(classifier)
             images.replace_one(
                 {'path': row['img_path']}, 
                 {'classifiers': existing_image.classifiers})
