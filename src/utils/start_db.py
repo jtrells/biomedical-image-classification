@@ -49,12 +49,12 @@ def populate_with_dataset(conn_uri, parquet_path, is_curated=False):
                 'allc': None,
                 'alen': None,
                 'classifiers': [classifier],
-                'doc': row['img_path'].split('//')[-3] if is_curated else None,
-                'crop': row['needsCropping'] if is_curated else None,
-                'comp': row['isCompound'] if is_curated else None,
-                'ovcrop': row['isOvercropped'] if is_curated else None,
-                'ovfrag': row['isOverfragmented'] if is_curated else None,
-                'bbox': [row['x0'], row['y0'], row['x1'], row['y1']] if is_curated else None,
+                'doc': None, #row['img_path'].split('//')[-3] if is_curated else None,
+                'crop': None, #row['needsCropping'] if is_curated else None,
+                'comp': None, #row['isCompound'] if is_curated else None,
+                'ovcrop': None, #row['isOvercropped'] if is_curated else None,
+                'ovfrag': None, #row['isOverfragmented'] if is_curated else None,
+                'bbox': None, #[row['x0'], row['y0'], row['x1'], row['y1']] if is_curated else None,
             }
 
             # image_id = images.insert_one(image)
