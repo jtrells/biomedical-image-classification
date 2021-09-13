@@ -90,3 +90,14 @@ def load_tree(taxonomy):
         }
     else:
         return {}
+
+
+@app.route(ROOT + '/taxonomy/<string:taxonomy>', methods=['GET'])
+def get_taxonomy(taxonomy):
+    taxonomy = escape(taxonomy)
+    taxonomy_info = mongo.db.taxonomies.find_one({"name": taxonomy})
+
+    if taxonomy_info:
+        return taxonomy_info
+    else:
+        return {}
