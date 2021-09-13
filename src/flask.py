@@ -74,7 +74,6 @@ def load_tree(taxonomy):
 
     if taxonomy_info:
         taxonomy_tree = [x['label'] for x in taxonomy_info['modalities']]
-        taxonomy_tree.append(taxonomy)
 
         parquet_path = path.join(vil_path, taxonomy, 'merged_labels.parquet')
         # dfs = [pd.read_parquet(path.join(parquets_path, x))
