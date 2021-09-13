@@ -73,7 +73,7 @@ def load_tree(taxonomy):
     taxonomy_info = mongo.db.taxonomies.find_one({"name": taxonomy})
 
     if taxonomy_info:
-        taxonomy_tree = [x.label for x in taxonomy_info.modalities]
+        taxonomy_tree = [x.label for x in taxonomy_info['modalities']]
         taxonomy_tree.append(taxonomy)
 
         parquets_path = path.join(vil_path, taxonomy)
