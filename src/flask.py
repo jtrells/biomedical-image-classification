@@ -86,7 +86,7 @@ def load_tree(taxonomy):
 
         return {
             "taxonomy": taxonomy_tree,
-            "data": df.label.values
+            "data": df.label.values.tolist()
         }
     else:
         return {}
