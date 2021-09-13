@@ -76,13 +76,14 @@ def load_tree(taxonomy):
         taxonomy_tree = [x['label'] for x in taxonomy_info['modalities']]
         taxonomy_tree.append(taxonomy)
 
-        parquets_path = path.join(vil_path, taxonomy)
-        dfs = [pd.read_parquet(path.join(parquets_path, x))
-               for x in listdir(parquets_path) if x.endswith('.parquet')]
-        df = dfs[0]
-        for i in range(1, len(dfs)):
-            df = merge_dfs(df, dfs[i])
-        df = df.drop(['img'], axis=1)
+        parquet_path = path.join(vil_path, taxonomy, 'merged_labels.parquet')
+        # dfs = [pd.read_parquet(path.join(parquets_path, x))
+        #        for x in listdir(parquets_path) if x.endswith('.parquet')]
+        # df = dfs[0]
+        # for i in range(1, len(dfs)):
+        #     df = merge_dfs(df, dfs[i])
+        # df = df.drop(['img'], axis=1)
+        df = pd.read_parquet(parquet_path)
 
         return {
             "taxonomy": taxonomy_tree,
