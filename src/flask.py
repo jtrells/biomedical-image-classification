@@ -98,6 +98,9 @@ def get_taxonomy(taxonomy):
     taxonomy_info = mongo.db.taxonomies.find_one({"name": taxonomy})
 
     if taxonomy_info:
-        return taxonomy_info
+        return {
+            "name": taxonomy_info["name"],
+            "modalities": taxonomy_info["modalities"]
+        }
     else:
         return {}
