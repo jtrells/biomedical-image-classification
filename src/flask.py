@@ -105,3 +105,18 @@ def get_taxonomy(taxonomy):
         }
     else:
         return {}
+
+
+@app.route(ROOT + '/image/<string:taxonomy>/<string:img_path>', methods=['GET'])
+def get_image_info(taxonomy, img_path):
+    taxonomy = escape(taxonomy)
+    img_path = escape(img_path)
+    parquet_path = path.join(vil_path, taxonomy, 'all.parquet')
+
+    df = pd.read_parquet(parquet_path)
+    image = df[df.img_path == img_path].loc[0]
+    return {
+        'img_path': image.img_path,
+        'caption': image.caption,
+        'full_label': image.label
+    }
