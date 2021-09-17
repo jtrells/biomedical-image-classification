@@ -112,9 +112,11 @@ def get_image_info(taxonomy, img_path):
     taxonomy = escape(taxonomy)
     img_path = escape(img_path)
     img_path = img_path.replace('*', '/')
+    print(img_path)
     parquet_path = path.join(vil_path, taxonomy, 'all.parquet')
 
     df = pd.read_parquet(parquet_path)
+    print(df[df.img_path == img_path])
     image = df[df.img_path == img_path].loc[0]
     return {
         'img_path': image.img_path,
