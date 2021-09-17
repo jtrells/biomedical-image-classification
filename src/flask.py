@@ -111,6 +111,7 @@ def get_taxonomy(taxonomy):
 def get_image_info(taxonomy, img_path):
     taxonomy = escape(taxonomy)
     img_path = escape(img_path)
+    img_path = img_path.replace('*', '/')
     parquet_path = path.join(vil_path, taxonomy, 'all.parquet')
 
     df = pd.read_parquet(parquet_path)
