@@ -139,7 +139,7 @@ def get_neighbors(taxonomy, classifier, img_path, num_neighbors):
     img_path = escape(img_path)
     img_path = img_path.replace('*', '/')
     classifier = escape(classifier)
-    num_neighbors = escape(num_neighbors)
+    num_neighbors = int(escape(num_neighbors))
 
     vil_path = getenv('VIL')
     version = 'latest'
