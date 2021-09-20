@@ -134,7 +134,7 @@ def get_image_info(taxonomy, img_path):
     }
 
 @app.route(ROOT + '/neighbors/<string:taxonomy>/<string:classifier>/<string:img_path>/<int:num_neighbors>', methods=['GET'])
-def get_neighbors(taxonomy, img_path, num_neighbors):
+def get_neighbors(taxonomy, classifier, img_path, num_neighbors):
     taxonomy = escape(taxonomy)
     img_path = escape(img_path)
     img_path = img_path.replace('*', '/')
