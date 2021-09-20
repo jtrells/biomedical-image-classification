@@ -67,6 +67,8 @@ def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, 
     parquet_path = Path(vil_path) / 'files' / taxonomy / classifier_info['dataset']
 
     df = pd.read_parquet(parquet_path)
+    print(parquet_path)
+    print(img_path)
     index = df[df.img_path==img_path].index[0]
 
     return get_neighbors_by_index(df, index, n_neighbors=num_neighbors)
