@@ -144,4 +144,5 @@ def get_neighbors(taxonomy, classifier, img_path, num_neighbors):
     vil_path = getenv('VIL')
     version = 'latest'
     df = get_figure_neighbors(mongo.db, vil_path, taxonomy, classifier, version, img_path, num_neighbors)
-    return json.loads(df.to_json(orient="records"))
+    output = json.loads(df.to_json(orient="records"))
+    return {'neighbors': output}

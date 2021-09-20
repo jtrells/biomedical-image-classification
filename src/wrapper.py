@@ -66,10 +66,7 @@ def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, 
         classifier_info = db.classifiers.find_one({'taxonomy': taxonomy,'classifier': classifier, 'version': version})            
     parquet_path = Path(vil_path) / 'files' / taxonomy / classifier_info['dataset']
 
-    df = pd.read_parquet(parquet_path)
-    print(parquet_path)
-    print(img_path)
-    print(n_neighbors)
+    df = pd.read_parquet(parquet_path)    
     index = df[df.img_path==img_path].index[0]
 
     return get_neighbors_by_index(df, index, n_neighbors=n_neighbors)
