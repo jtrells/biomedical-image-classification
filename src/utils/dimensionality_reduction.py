@@ -50,7 +50,10 @@ def calc_neighborhood_hit(df, embeddings, le, n_neighbors=6, label_col='label'):
 
 def get_neighbors_by_index(df, indexItem, n_neighbors=10):
     features = np.vstack(df.features.values)
-    model = cumlNearestNeighbors(n_neighbors=n_neighbors+1, algorithm='brute').fit(features)
+    print(n_neighbors)
+    print(type(n_neighbors))
+    total_neighbors = n_neighbors + 1   # because model returns item itself
+    model = cumlNearestNeighbors(n_neighbors=total_neighbors, algorithm='brute').fit(features)
     itemFeatures = np.vstack([df.iloc[indexItem].features])
     distances, indices = model.kneighbors(itemFeatures)
     # first item is the queried item itself
