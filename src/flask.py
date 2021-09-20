@@ -9,6 +9,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
 
 import pandas as pd
+import json
 from os import getenv, path, listdir
 from flask import Flask
 from flask_cors import CORS
@@ -125,5 +126,5 @@ def get_image_info(taxonomy, img_path):
         'img_path': image.img_path,
         'caption': image.caption,
         'full_label': image.label,
-        'related': related_df.to_json(orient="records")
+        'related': json.loads(related_df.to_json(orient="records"))
     }
