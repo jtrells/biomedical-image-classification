@@ -17,7 +17,7 @@ from markupsafe import escape
 from dotenv import load_dotenv
 from flask_pymongo import PyMongo
 
-from wrapper import get_data
+from wrapper import get_data, get_figure_neighbors
 
 load_dotenv()
 app = Flask(__name__)
