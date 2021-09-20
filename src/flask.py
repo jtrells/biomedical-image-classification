@@ -118,13 +118,17 @@ def get_image_info(taxonomy, img_path):
     df = pd.read_parquet(parquet_path)
     image = df[df.img_path == img_path].iloc[0]
 
-    last_slash_idx = image.img_path.rfind('/')
-    parent_path = image.img_path[0:last_slash_idx]
-    related_df = df[df.img_path.str.contains(parent_path)]
+    if 'tinman' in image.img_path:
+        last_slash_idx = image.img_path.rfind('/')
+        parent_path = image.img_path[0:last_slash_idx]
+        related_df = df[df.img_path.str.contains(parent_path)]
+        related = json.loads(related_df.to_json(orient="records"))
+    else:
+        related = []
 
     return {
         'img_path': image.img_path,
         'caption': image.caption,
         'full_label': image.label,
-        'related': json.loads(related_df.to_json(orient="records"))
+        'related': related
     }
