@@ -133,7 +133,7 @@ def get_image_info(taxonomy, img_path):
         'related': related
     }
 
-@app.route(ROOT + 'image/image/<string:taxonomy>/<string:classifier>/<string:img_path>/neighbors/<int:num_neighbors>', methods=['GET'])
+@app.route(ROOT + '/image/<string:taxonomy>/<string:classifier>/<string:img_path>/neighbors/<int:num_neighbors>', methods=['GET'])
 def get_neighbors(taxonomy, img_path, num_neighbors):
     taxonomy = escape(taxonomy)
     img_path = escape(img_path)
