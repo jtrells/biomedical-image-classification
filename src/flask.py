@@ -116,8 +116,14 @@ def get_image_info(taxonomy, img_path):
 
     df = pd.read_parquet(parquet_path)
     image = df[df.img_path == img_path].iloc[0]
+
+    last_slash_idx = image.img_path.rfind('/')
+    parent_path = image.img_path[0:last_slash_idx]
+    related_df = df[df.img_path.str.contains(parent_path)]
+
     return {
         'img_path': image.img_path,
         'caption': image.caption,
-        'full_label': image.label
+        'full_label': image.label,
+        'related': related_df.to_json(orient="records")
     }
