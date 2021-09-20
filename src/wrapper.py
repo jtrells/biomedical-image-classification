@@ -2,7 +2,7 @@ import pandas as pd
 from numpy import vstack
 from pymongo import DESCENDING
 from utils.FeatureExtractor import update_features
-from utils.dimensionality_reduction import reduce_dimensions, calc_neighborhood_hit
+from utils.dimensionality_reduction import reduce_dimensions, calc_neighborhood_hit, get_neighbors_by_index
 from models.ResNetClass import ResNetClass
 from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
@@ -55,4 +55,18 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     return df
 
 
+def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, num_neighbors):
+    if (version == 'latest'):
+        cursor = db.classifiers.find({'taxonomy': taxonomy,'classifier': classifier}).sort([('version', DESCENDING)])
+        try:
+            classifier_info = cursor.next()
+        except: 
+            raise Exception('no classifier available for parameters')
+    else:
+        classifier_info = db.classifiers.find_one({'taxonomy': taxonomy,'classifier': classifier, 'version': version})            
+    parquet_path = Path(vil_path) / 'files' / taxonomy / classifier_info['dataset']
 
+    df = pd.read_parquet(parquet_path)
+    index = df[df.img_path==img_path].index[0]
+
+    return get_neighbors_by_index(df, index, n_neighbors=num_neighbors)

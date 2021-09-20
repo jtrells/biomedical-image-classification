@@ -132,3 +132,16 @@ def get_image_info(taxonomy, img_path):
         'full_label': image.label,
         'related': related
     }
+
+@app.route(ROOT + 'image/image/<string:taxonomy>/<string:classifier>/<string:img_path>/neighbors/<int:num_neighbors', methods=['GET'])
+def get_neighbors(taxonomy, img_path, num_neighbors):
+    taxonomy = escape(taxonomy)
+    img_path = escape(img_path)
+    img_path = img_path.replace('*', '/')
+    classifier = escape(classifier)
+    num_neighbors = escape(num_neighbors)
+
+    vil_path = getenv('VIL')
+    version = 'latest'
+    df = get_figure_neighbors(mongo.db, vil_path, taxonomy, classifier, version, img_path, num_neighbors)
+    return json.loads(df.to_json(orient="records"))
