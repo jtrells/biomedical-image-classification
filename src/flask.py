@@ -149,7 +149,7 @@ def get_neighbors(taxonomy, classifier, img_path, num_neighbors):
 
 
 @app.route(ROOT + '/classifiers/<string:taxonomy>/active')
-def get_active_classifiers():
+def get_active_classifiers(taxonomy):
     taxonomy = str(escape(taxonomy))
     classifiers = get_active_classifiers(mongo.db, taxonomy)
     return {'results': classifiers}
