@@ -17,7 +17,7 @@ from markupsafe import escape
 from dotenv import load_dotenv
 from flask_pymongo import PyMongo
 
-from wrapper import get_data, get_figure_neighbors
+from wrapper import get_data, get_figure_neighbors, get_active_classifiers
 
 load_dotenv()
 app = Flask(__name__)
@@ -146,3 +146,11 @@ def get_neighbors(taxonomy, classifier, img_path, num_neighbors):
     df = get_figure_neighbors(mongo.db, vil_path, taxonomy, classifier, version, img_path, num_neighbors)
     output = json.loads(df.to_json(orient="records"))
     return {'neighbors': output}
+
+
+@app.route(ROOT + '/classifiers/<string:taxonomy>/active')
+def get_active_classifiers():
+    taxonomy = str(escape(taxonomy))
+    classifiers = get_active_classifiers(mongo.db, taxonomy)
+    return {'results': classifiers}
+

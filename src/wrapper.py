@@ -70,3 +70,11 @@ def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, 
     index = df[df.img_path==img_path].index[0]
 
     return get_neighbors_by_index(df, index, n_neighbors=n_neighbors)
+
+
+def get_active_classifiers(db, taxonomy):
+    classifiers = []
+    for classifier in db.classifiers.find({'taxonomy': taxonomy, 'active': True}):
+        classifiers.append(classifier)
+    return classifiers
+
