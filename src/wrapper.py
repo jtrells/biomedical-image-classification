@@ -74,7 +74,12 @@ def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, 
 
 def get_active_classifiers(db, taxonomy):
     classifiers = []
-    for classifier in db.classifiers.find({'taxonomy': taxonomy, 'active': True}):
-        classifiers.append(classifier)
+    for c in db.classifiers.find({'taxonomy': taxonomy, 'active': True}):
+        classifiers.append({
+            'taxonomy':   c['taxonomy'],
+            'classifier': c['classifier'],
+            'version':    c['version'],
+            'active':     c['active']
+        })
     return classifiers
 
