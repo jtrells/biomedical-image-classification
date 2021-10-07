@@ -59,7 +59,19 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
         print("dimensions > 2 but only retrieving the first three dimensions")
         df['z'] = embeddings[:, 2]
 
-    return df
+    all_path = Path(vil_path) / 'files' / taxonomy / 'all.parquet'
+    all_df = pd.read_parquet(all_path)
+    merged_df = df.merge(all_df, on="img", how="inner")
+    merged_df = merged_df.drop(
+        ['caption_y', 'width_y', 'height_y', 'img_path_y'], axis=1)
+    merged_df = merged_df.rename(columns={"label_x": "label",
+                                          "img_path_x": "img_path",
+                                          "caption_x": "caption",
+                                          "prediction_x": "prediction",
+                                          "width_x": "width",
+                                          "height_x": "height",
+                                          "label_y": "full_label"})
+    return merged_df
 
 
 def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, n_neighbors, subset='all'):
