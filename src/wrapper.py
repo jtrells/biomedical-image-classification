@@ -60,6 +60,7 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
         df['z'] = embeddings[:, 2]
 
     all_path = Path(vil_path) / 'files' / taxonomy / 'all.parquet'
+    print(all_path)
     all_df = pd.read_parquet(all_path)
     merged_df = df.merge(all_df, on="img", how="inner")
     merged_df = merged_df.drop(
