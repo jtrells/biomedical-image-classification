@@ -63,15 +63,15 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     print(all_path)
     all_df = pd.read_parquet(all_path)
     merged_df = df.merge(all_df, on="img", how="inner")
-    merged_df = merged_df.drop(
-        ['caption_y', 'width_y', 'height_y', 'img_path_y'], axis=1)
-    merged_df = merged_df.rename(columns={"label_x": "label",
-                                          "img_path_x": "img_path",
-                                          "caption_x": "caption",
-                                          "prediction_x": "prediction",
-                                          "width_x": "width",
-                                          "height_x": "height",
-                                          "label_y": "full_label"})
+    # merged_df = merged_df.drop(
+    #     ['caption_y', 'width_y', 'height_y', 'img_path_y'], axis=1)
+    # merged_df = merged_df.rename(columns={"label_x": "label",
+    #                                       "img_path_x": "img_path",
+    #                                       "caption_x": "caption",
+    #                                       "prediction_x": "prediction",
+    #                                       "width_x": "width",
+    #                                       "height_x": "height",
+    #                                       "label_y": "full_label"})
     return merged_df
 
 
