@@ -62,7 +62,7 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     return df
 
 
-def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, n_neighbors):
+def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, n_neighbors, subset='all'):
     if (version == 'latest'):
         cursor = db.classifiers.find(
             {'taxonomy': taxonomy, 'classifier': classifier}).sort([('version', DESCENDING)])
@@ -77,6 +77,12 @@ def get_figure_neighbors(db, vil_path, taxonomy, classifier, version, img_path, 
         classifier_info['dataset']
 
     df = pd.read_parquet(parquet_path)
+    # filter the df by split if required
+    subset_col = 'split_set'
+    subset = None if subset == 'all' else subset
+    if subset != None:
+        df = df[df[subset_col] == subset].reset_index(drop=True)
+
     index = df[df.img_path == img_path].index[0]
 
     neighbors_df = get_neighbors_by_index(df, index, n_neighbors=n_neighbors)

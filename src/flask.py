@@ -133,17 +133,20 @@ def get_image_info(taxonomy, img_path):
         'related': related
     }
 
-@app.route(ROOT + '/neighbors/<string:taxonomy>/<string:classifier>/<string:img_path>/<int:num_neighbors>', methods=['GET'])
-def get_neighbors(taxonomy, classifier, img_path, num_neighbors):
+
+@app.route(ROOT + '/neighbors/<string:taxonomy>/<string:classifier>/<string:subset>/<string:img_path>/<int:num_neighbors>', methods=['GET'])
+def get_neighbors(taxonomy, classifier, subset, img_path, num_neighbors):
     taxonomy = escape(taxonomy)
     img_path = escape(img_path)
     img_path = img_path.replace('*', '/')
     classifier = escape(classifier)
+    subset = escape(subset)
     num_neighbors = int(escape(num_neighbors))
 
     vil_path = getenv('VIL')
     version = 'latest'
-    df = get_figure_neighbors(mongo.db, vil_path, taxonomy, classifier, version, img_path, num_neighbors)
+    df = get_figure_neighbors(mongo.db, vil_path, taxonomy,
+                              classifier, version, img_path, num_neighbors, subset=subset)
     output = json.loads(df.to_json(orient="records"))
     return {'neighbors': output}
 
@@ -153,4 +156,3 @@ def get_available_active_classifiers(taxonomy):
     taxonomy = str(escape(taxonomy))
     classifiers = get_active_classifiers(mongo.db, taxonomy)
     return {'results': classifiers}
-
