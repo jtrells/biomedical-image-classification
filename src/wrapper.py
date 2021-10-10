@@ -128,5 +128,9 @@ def get_active_classifiers(db, taxonomy):
 def upsert_label_updates(db, images):
     for image in images:
         result = db.images.replace_one({"img_path": image['img_path']},
-                             {"label": image['label']}, upsert=True)
+                             {
+                                 "label": image['label'],
+                                 "img_path": image['img_path']
+                             },
+                             upsert=True)
         print(result)
