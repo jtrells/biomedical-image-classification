@@ -126,6 +126,7 @@ def get_active_classifiers(db, taxonomy):
     return classifiers
 
 def upsert_label_updates(db, images):
+    total_updates  = 0
     for image in images:
         result = db.images.replace_one({"img_path": image['img_path']},
                              {
@@ -135,6 +136,8 @@ def upsert_label_updates(db, images):
                                  "original_label": image['label']
                              },
                              upsert=True)
+        total_updates += result.matched_count
+    return total_updates
 
 def get_updated_images(db):
     images = {}
