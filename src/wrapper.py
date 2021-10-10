@@ -139,5 +139,5 @@ def upsert_label_updates(db, images):
 def get_updated_images(db):
     images = {}
     for image in db.images.find({}):
-        images[image.img_path] = image
+        images[image['img_path']] = image
     return images
