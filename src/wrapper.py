@@ -139,7 +139,7 @@ def upsert_label_updates(db, images):
         total_updates += result.matched_count
         print("update", result.matched_count)
         print("matched", result.modified_count)
-        print("ack", result.acknowledged)
+        print("upsert id", result.upserted_id)
         print("")
     return total_updates
 
