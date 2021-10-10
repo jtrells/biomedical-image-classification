@@ -11,7 +11,7 @@ if module_path not in sys.path:
 import pandas as pd
 import json
 from os import getenv, path, listdir
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from markupsafe import escape
 from dotenv import load_dotenv
