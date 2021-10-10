@@ -160,6 +160,5 @@ def get_available_active_classifiers(taxonomy):
 @app.route(ROOT + '/images', methods=['POST'])
 def upsert_images():
     images_to_update = request.json
-    print(images_to_update)
     upsert_label_updates(mongo.db, images_to_update)
     return {"hi": "hi"}
