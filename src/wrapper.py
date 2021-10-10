@@ -139,5 +139,10 @@ def upsert_label_updates(db, images):
 def get_updated_images(db):
     images = {}
     for image in db.images.find({}):
-        images[image['img_path']] = image
+        images[image['img_path']] = {
+            'img_path': image['img_path'],
+            'label': image['label'],
+            'originalLabel': image['original_label'],
+            'action': 'update'
+        }
     return images
