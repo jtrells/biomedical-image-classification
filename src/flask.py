@@ -11,7 +11,7 @@ if module_path not in sys.path:
 import pandas as pd
 import json
 from os import getenv, path, listdir
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from markupsafe import escape
 from dotenv import load_dotenv
@@ -156,3 +156,8 @@ def get_available_active_classifiers(taxonomy):
     taxonomy = str(escape(taxonomy))
     classifiers = get_active_classifiers(mongo.db, taxonomy)
     return {'results': classifiers}
+
+@app.route(ROOT + '/images', methods=['POST'])
+def upsert_images():
+    data = request.json
+    return jsonify(data)
