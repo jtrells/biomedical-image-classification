@@ -138,7 +138,8 @@ def upsert_label_updates(db, images):
                              },
                              upsert=True)
         total_updates += result.matched_count
-        if (result.upserted_id) total_new += 1
+        if result.upserted_id:
+            total_new += 1
     return total_updates, total_new
 
 def get_updated_images(db):
