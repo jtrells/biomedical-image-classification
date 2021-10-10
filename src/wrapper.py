@@ -129,8 +129,15 @@ def upsert_label_updates(db, images):
     for image in images:
         result = db.images.replace_one({"img_path": image['img_path']},
                              {
-                                 "label": image['label'],
-                                 "img_path": image['img_path']
+                                 "label": image['newlabel'],
+                                 "img_path": image['img_path'],
+                                 "action": "update",
+                                 "original_label": image['label']
                              },
                              upsert=True)
-        print(result)
+
+def get_updated_images(db):
+    images = {}
+    for image in db.images.find({}):
+        images[image.img_path] = image
+    return images

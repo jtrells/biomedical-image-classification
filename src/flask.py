@@ -17,7 +17,8 @@ from markupsafe import escape
 from dotenv import load_dotenv
 from flask_pymongo import PyMongo
 
-from wrapper import get_data, get_figure_neighbors, get_active_classifiers, upsert_label_updates
+from wrapper import get_data, get_figure_neighbors, get_active_classifiers, 
+                    upsert_label_updates, get_updated_images
 
 load_dotenv()
 app = Flask(__name__)
@@ -162,3 +163,9 @@ def upsert_images():
     images_to_update = request.json
     upsert_label_updates(mongo.db, images_to_update)
     return {"hi": "hi"}
+
+
+@app.route(ROOT + '/images', methods=['GET'])
+def get_updated_images():
+    images_dictionary = get_updated_images
+    return jsonify(images_dictionary)
