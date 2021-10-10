@@ -160,8 +160,9 @@ def get_available_active_classifiers(taxonomy):
 @app.route(ROOT + '/images', methods=['POST'])
 def upsert_images():
     images_to_update = request.json
-    total_updates = upsert_label_updates(mongo.db, images_to_update)
-    return {"totalUpdates": total_updates}
+    total_updates, total_new = upsert_label_updates(mongo.db, images_to_update)
+    return {"numberUpdates": total_updates, 
+            "numberNew": total_new}
 
 
 @app.route(ROOT + '/images', methods=['GET'])
