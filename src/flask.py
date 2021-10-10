@@ -165,6 +165,6 @@ def upsert_images():
 
 
 @app.route(ROOT + '/images', methods=['GET'])
-def get_updated_images():
+def get_db_updated_images():
     images_dictionary = get_updated_images(mongo.db)
     return jsonify(images_dictionary)
