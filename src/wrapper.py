@@ -71,6 +71,7 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
                                           "width_x": "width",
                                           "height_x": "height",
                                           "label_y": "full_label"})
+    merged_df['orig_full_label'] = merged_df['full_label']
     return merged_df
 
 
@@ -125,22 +126,24 @@ def get_active_classifiers(db, taxonomy):
         })
     return classifiers
 
+
 def upsert_label_updates(db, images):
-    total_updates  = 0
+    total_updates = 0
     total_new = 0
     for image in images:
         result = db.images.replace_one({"img_path": image['img_path']},
-                             {
-                                 "label": image['newlabel'],
-                                 "img_path": image['img_path'],
-                                 "action": "update",
-                                 "original_label": image['label']
-                             },
-                             upsert=True)
+                                       {
+            "label": image['newlabel'],
+            "img_path": image['img_path'],
+            "action": "update",
+            "original_label": image['label']
+        },
+            upsert=True)
         total_updates += result.matched_count
         if result.upserted_id:
             total_new += 1
     return total_updates, total_new
+
 
 def get_updated_images(db):
     images = {}
