@@ -127,17 +127,36 @@ def get_active_classifiers(db, taxonomy):
     return classifiers
 
 
+def delete_images(db, images):
+    for image in images:
+        db.images.replace_one({"img_path": image['img_path']},
+                              {"action": "delete"}, upsert=True)
+    return len(images)
+
+
 def upsert_label_updates(db, images):
     total_updates = 0
     total_new = 0
     for image in images:
         if image['label'] != image['newlabel']:
+            lblDepth = image['label'].split('.')
+            newLblDepth = image['newlabel'].split('.')
+
+            if lblDepth[0] == newLblDepth[0]:
+                if len(newLblDepth) > len(lblDepth):
+                    update_type = "new_label_in_subcollection"
+                else:
+                    update_type = "update_in_collection"
+            else:
+                update_type = "moved_to_another_collection"
+
             result = db.images.replace_one({"img_path": image['img_path']},
                                            {
                 "label": image['newlabel'],
                 "img_path": image['img_path'],
                 "action": "update",
-                "original_label": image['label']
+                "original_label": image['label'],
+                "update_type": update_type
             },
                 upsert=True)
             total_updates += result.matched_count
@@ -148,7 +167,7 @@ def upsert_label_updates(db, images):
 
 def get_updated_images(db):
     images = {}
-    for image in db.images.find({}):
+    for image in db.images.find({"action": "update"}):
         images[image['img_path']] = {
             'img_path': image['img_path'],
             'label': image['label'],

@@ -17,7 +17,7 @@ from markupsafe import escape
 from dotenv import load_dotenv
 from flask_pymongo import PyMongo
 
-from wrapper import get_data, get_figure_neighbors, get_active_classifiers, upsert_label_updates, get_updated_images
+from wrapper import get_data, get_figure_neighbors, get_active_classifiers, upsert_label_updates, get_updated_images, delete_images
 
 load_dotenv()
 app = Flask(__name__)
@@ -170,3 +170,10 @@ def upsert_images():
 def get_db_updated_images():
     images_dictionary = get_updated_images(mongo.db)
     return jsonify(images_dictionary)
+
+
+@app.route(ROOT + '/images', methods=['DELETE'])
+def mark_images_for_delete():
+    images_to_delete = request.json
+    total = delete_images(mongo.db, images_to_delete)
+    return {"numberDelete": total}
