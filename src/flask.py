@@ -47,7 +47,7 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
     df = get_data(mongo.db, vil_path, taxonomy, classifier,
                   projection, version=version, subset=subset, num_dimensions=2)
     df = df[["img", "img_path", "x", "y", "hits",
-             "label", "prediction", "width", "height", "full_label", "caption", "source"]]
+             "label", "prediction", "width", "height", "full_label", "caption", "source", "orig_full_label"]]
 
     return df.to_json(orient="records")
 
@@ -157,11 +157,12 @@ def get_available_active_classifiers(taxonomy):
     classifiers = get_active_classifiers(mongo.db, taxonomy)
     return {'results': classifiers}
 
+
 @app.route(ROOT + '/images', methods=['POST'])
 def upsert_images():
     images_to_update = request.json
     total_updates, total_new = upsert_label_updates(mongo.db, images_to_update)
-    return {"numberUpdates": total_updates, 
+    return {"numberUpdates": total_updates,
             "numberNew": total_new}
 
 
