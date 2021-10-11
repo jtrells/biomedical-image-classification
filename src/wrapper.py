@@ -131,17 +131,18 @@ def upsert_label_updates(db, images):
     total_updates = 0
     total_new = 0
     for image in images:
-        result = db.images.replace_one({"img_path": image['img_path']},
-                                       {
-            "label": image['newlabel'],
-            "img_path": image['img_path'],
-            "action": "update",
-            "original_label": image['label']
-        },
-            upsert=True)
-        total_updates += result.matched_count
-        if result.upserted_id:
-            total_new += 1
+        if image['label'] != image['newLabel']:
+            result = db.images.replace_one({"img_path": image['img_path']},
+                                           {
+                "label": image['newlabel'],
+                "img_path": image['img_path'],
+                "action": "update",
+                "original_label": image['label']
+            },
+                upsert=True)
+            total_updates += result.matched_count
+            if result.upserted_id:
+                total_new += 1
     return total_updates, total_new
 
 
