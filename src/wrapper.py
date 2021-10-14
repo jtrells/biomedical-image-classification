@@ -132,7 +132,10 @@ def delete_images(db, images):
         db.images.replace_one({"img_path": image['img_path']},
                               {
                                   "action": "delete", 
-                                  "img_path": image['img_path']
+                                  "img_path": image['img_path'],
+                                  "label": image['label'],
+                                  "prediction": image['prediction'],
+                                  "original_label": image['label']
                                }, upsert=True)
     return len(images)
 
@@ -159,7 +162,8 @@ def upsert_label_updates(db, images):
                 "img_path": image['img_path'],
                 "action": "update",
                 "original_label": image['label'],
-                "update_type": update_type
+                "update_type": update_type,
+                "prediction": image['prediction']
             },
                 upsert=True)
             total_updates += result.matched_count
@@ -170,10 +174,11 @@ def upsert_label_updates(db, images):
 
 def get_updated_images(db):
     images = {}
-    for image in db.images.find({"action": "update"}):
+    for image in db.images.find({}):
         images[image['img_path']] = {
             'img_path': image['img_path'],
             'label': image['label'],
             'originalLabel': image['original_label'],
+            'prediction': image['prediction'],
         }
     return images
