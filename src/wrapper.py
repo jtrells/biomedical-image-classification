@@ -180,5 +180,6 @@ def get_updated_images(db):
             'label': image['label'],
             'originalLabel': image['original_label'],
             'prediction': image['prediction'],
+            'action': image['action']
         }
     return images
