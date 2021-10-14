@@ -130,7 +130,10 @@ def get_active_classifiers(db, taxonomy):
 def delete_images(db, images):
     for image in images:
         db.images.replace_one({"img_path": image['img_path']},
-                              {"action": "delete"}, upsert=True)
+                              {
+                                  "action": "delete", 
+                                  "img_path": image['img_path']
+                               }, upsert=True)
     return len(images)
 
 
