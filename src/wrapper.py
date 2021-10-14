@@ -175,6 +175,5 @@ def get_updated_images(db):
             'img_path': image['img_path'],
             'label': image['label'],
             'originalLabel': image['original_label'],
-            'action': 'update'
         }
     return images
