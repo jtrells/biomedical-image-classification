@@ -276,10 +276,10 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
     df_train['pred_probs'] = train_probs
 
     df_val['prediction'] = label_encoder.inverse_transform(val_preds)
-    df_train['pred_probs'] = val_probs
+    df_val['pred_probs'] = val_probs
 
     df_test['prediction'] = label_encoder.inverse_transform(test_preds)
-    df_train['pred_probs'] = test_probs
+    df_test['pred_probs'] = test_probs
 
     df = pd.concat([df_train, df_val, df_test], sort=False)
     df.to_parquet(parquet_path)
