@@ -20,7 +20,7 @@ from dataset.ImageDataset import ImageDataset, EvalImageDataset
 from torch.utils.data import DataLoader
 from pathlib import Path
 from utils.label_encoder import label_encoder_target
-
+import torch.nn.functional as nnf
 
 def get_vector_representation(data_loader, model, device):
     model.to(device)
@@ -197,6 +197,26 @@ def predict(model, dataloader):
             predictions += preds
     return predictions
 
+def predict2(model, dataloader):
+    model.to('cuda')
+    model.eval()
+
+    predictions = []
+    probablities = []
+    with torch.no_grad():
+        for x, y in dataloader:
+            x = x.to('cuda')
+            output = model(x)
+
+            probs = nnf.softmax(output, dim=1)
+            _, preds = torch.max(output, dim=1)            
+            
+            preds = preds.cpu().tolist()
+            probs = probs.cpu().tolist()
+
+            predictions += preds
+            probabilities += probs
+    return predictions, probabilities
 
 def extract_features(fe_model, dataloader):
     fe_model.to('cuda')
@@ -248,9 +268,18 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
     df_val['features'] = list(extract_features(fe_model, val_dataloader))
     df_test['features'] = list(extract_features(fe_model, test_dataloader))
 
-    df_train['prediction'] = label_encoder.inverse_transform(predict(model, train_dataloader))
-    df_val['prediction'] = label_encoder.inverse_transform(predict(model, val_dataloader))
-    df_test['prediction'] = label_encoder.inverse_transform(predict(model, test_dataloader))
+    train_preds, train_probs = predict2(model, train_dataloader)
+    val_preds, val_probs = predict2(model, val_dataloader)
+    test_preds, test_probs = predict2(model, test_dataloader)
+
+    df_train['prediction'] = label_encoder.inverse_transform(train_preds)
+    df_train['pred_probs'] = train_probs
+
+    df_val['prediction'] = label_encoder.inverse_transform(val_preds)
+    df_train['pred_probs'] = val_probs
+
+    df_test['prediction'] = label_encoder.inverse_transform(test_preds)
+    df_train['pred_probs'] = test_probs
 
     df = pd.concat([df_train, df_val, df_test], sort=False)
     df.to_parquet(parquet_path)
