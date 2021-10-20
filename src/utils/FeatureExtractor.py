@@ -202,7 +202,7 @@ def predict2(model, dataloader):
     model.eval()
 
     predictions = []
-    probablities = []
+    probabilities = []
     with torch.no_grad():
         for x, y in dataloader:
             x = x.to('cuda')
