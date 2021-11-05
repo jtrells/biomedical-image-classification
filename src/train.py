@@ -49,7 +49,16 @@ class TrainerWrapper():
         self.version = self._get_version()
 
         df = pd.read_parquet(self.data_path)
+        df = self.remove_small_classes(df)
         self.le, _ = label_encoder_target(df, target_col=self.label_col)
+
+    def remove_small_classes(self, df):
+        gb = df.groupby(self.label_col)[self.label_col].count()
+        to_remove = []
+        for label in gb.index:
+            if gb[label] < 50:
+                to_remove.append(label)
+        return df[~df.label.isin(to_remove)]
 
     def _get_version(self):
         models = [x for x in listdir(self.output_dir) if x[-3:] == '.pt']
@@ -62,7 +71,7 @@ class TrainerWrapper():
             transforms.ToTensor(),
         ]
         transform = transforms.Compose(transform_list)
-        print(str(self.base_img_dir))
+
         train_dataset = ImageDataset(self.data_path,
                                      self.le,
                                      str(self.base_img_dir),
@@ -171,7 +180,7 @@ class TrainerWrapper():
             # model.std_dataset = std
             # self.save_hyperparameters("class_weights","mean_dataset","std_dataset")
             checkpoint = torch.load(
-                self.output_dir/f'{self.classifier}_{self.version-1}{self.extension}')
+                self.output_dir / f'{self.classifier}_{self.version-1}{self.extension}')
             model.load_state_dict(checkpoint['state_dict'])
 
         max_epochs = 100 if self.epochs == 0 else self.epochs

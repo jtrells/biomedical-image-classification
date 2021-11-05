@@ -46,7 +46,16 @@ class ImageDataModule(pl.LightningDataModule):
             self.df = pd.read_csv(self.data_path, sep='\t')
         else:
             self.df = pd.read_parquet(self.data_path)
+            self.df = self.remove_small_classes(self.df)
         # Always run the prepare data in order to get the same results in training
+
+    def remove_small_classes(self, df):
+        gb = df.groupby(self.modality_col)[self.modality_col].count()
+        to_remove = []
+        for label in gb.index:
+            if gb[label] < 50:
+                to_remove.append(label)
+        return df[~df.label.isin(to_remove)]
 
     def set_seed(self):
         seed_everything(self.seed)
@@ -59,17 +68,18 @@ class ImageDataModule(pl.LightningDataModule):
         # self.class_weights = class_weight.compute_class_weight('balanced', classes=self.le.classes_, y=y_train)
         self.class_weights = class_weight.compute_class_weight(
             'balanced', classes=np.unique(y_train), y=y_train)
-        if set(np.unique(y_train)) != set(self.le.classes_):
-            # special cases when users defined a class but we don't have training data
-            # e.g. electron other had one sample in validation and one in test
-            weights = []
-            weights_dictionary = dict(zip(np.unique(y_train), weights))
-            for class_label in self.le.classes_:
-                if class_label in weights_dictionary:
-                    weights.append(weights_dictionary[class_label])
-                else:
-                    weights.append(0.0)
-            self.class_weights = weights
+        # better remove samples if there are less than 50
+        # if set(np.unique(y_train)) != set(self.le.classes_):
+        #     # special cases when users defined a class but we don't have training data
+        #     # e.g. electron other had one sample in validation and one in test
+        #     weights = []
+        #     weights_dictionary = dict(zip(np.unique(y_train), weights))
+        #     for class_label in self.le.classes_:
+        #         if class_label in weights_dictionary:
+        #             weights.append(weights_dictionary[class_label])
+        #         else:
+        #             weights.append(0.0)
+        #     self.class_weights = weights
 
         del train_df, y_train
 
