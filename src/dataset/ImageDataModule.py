@@ -59,7 +59,7 @@ class ImageDataModule(pl.LightningDataModule):
         # self.class_weights = class_weight.compute_class_weight('balanced', classes=self.le.classes_, y=y_train)
         self.class_weights = class_weight.compute_class_weight(
             'balanced', classes=np.unique(y_train), y=y_train)
-        if set(np.unique()) != set(self.le.classes_):
+        if set(np.unique(y_train)) != set(self.le.classes_):
             # special cases when users defined a class but we don't have training data
             # e.g. electron other had one sample in validation and one in test
             weights = []
