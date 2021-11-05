@@ -55,9 +55,22 @@ class ImageDataModule(pl.LightningDataModule):
         train_df = self.df[self.df[self.target_class_col] == 'TRAIN']
         y_train = train_df[self.modality_col].values
         # calculate a class weight vector
+
+        # self.class_weights = class_weight.compute_class_weight('balanced', classes=self.le.classes_, y=y_train)
         self.class_weights = class_weight.compute_class_weight(
-            'balanced', classes=self.le.classes_, y=y_train)
-        # self.class_weights = class_weight.compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
+            'balanced', classes=np.unique(y_train), y=y_train)
+        if set(np.unique()) != set(self.le.classes_):
+            # special cases when users defined a class but we don't have training data
+            # e.g. electron other had one sample in validation and one in test
+            weights = []
+            weights_dictionary = dict(zip(np.unique(y_train), weights))
+            for class_label in self.le.classes_:
+                if class_label in weights_dictionary:
+                    weights.append(weights_dictionary[class_label])
+                else:
+                    weights.append(0.0)
+            self.class_weights = weights
+
         del train_df, y_train
 
     def train_dataloader(self):
