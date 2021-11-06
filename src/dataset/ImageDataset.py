@@ -24,7 +24,7 @@ class ImageDataset(torch.utils.data.Dataset):
         label_name='MODALITY',
         target_class_col='SET',
         path_col='PATH',
-        remove_small_classes=True
+        remove_small=True
     ):
         self.base_dir = Path(base_img_dir)
         self.image_transform = image_transform
@@ -37,7 +37,7 @@ class ImageDataset(torch.utils.data.Dataset):
             self.df = pd.read_csv(csv_data_path, sep='\t')
         else:
             self.df = pd.read_parquet(csv_data_path)
-        if remove_small_classes:
+        if remove_small:
             self.df = remove_small_classes(self.df, label_name, threshold=100)
 
         if type(data_set) == str:

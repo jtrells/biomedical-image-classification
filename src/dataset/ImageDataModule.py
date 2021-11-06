@@ -28,7 +28,7 @@ class ImageDataModule(pl.LightningDataModule):
                  modality_col='MODALITY',
                  path_col='PATH',
                  shuffle_train=True,
-                 remove_small_classes=True):
+                 remove_small=True):
         super().__init__()
         self.batch_size = batch_size
         self.data_path = data_path
@@ -43,7 +43,7 @@ class ImageDataModule(pl.LightningDataModule):
         self.image_transforms_valid = image_transforms[1]
         self.image_transforms_test = image_transforms[2]
         self.shuffle_train = shuffle_train
-        self.remove_small_classes = remove_small_classes
+        self.remove_small = remove_small
 
     def prepare_data(self):
         path = Path(self.data_path)
@@ -51,7 +51,7 @@ class ImageDataModule(pl.LightningDataModule):
             self.df = pd.read_csv(self.data_path, sep='\t')
         else:
             self.df = pd.read_parquet(self.data_path)
-        if self.remove_small_classes:
+        if self.remove_small:
             self.df = remove_small_classes(self.df, self.modality_col, threshold=100)
         # Always run the prepare data in order to get the same results in training
 
@@ -81,7 +81,7 @@ class ImageDataModule(pl.LightningDataModule):
 
         del train_df, y_train
 
-    def train_dataloader(self, remove_small_classes=True):
+    def train_dataloader(self, remove_small=True):
 
         train_dataset = ImageDataset(
             csv_data_path=self.data_path,
@@ -92,14 +92,14 @@ class ImageDataModule(pl.LightningDataModule):
             label_name=self.modality_col,
             target_class_col=self.target_class_col,
             path_col=self.path_col,
-            remove_small_classes=remove_small_classes)
+            remove_small=remove_small)
 
         return DataLoader(dataset=train_dataset,
                           batch_size=self.batch_size,
                           shuffle=self.shuffle_train,
                           num_workers=self.num_workers)
 
-    def val_dataloader(self, remove_small_classes=True):
+    def val_dataloader(self, remove_small=True):
 
         val_dataset = ImageDataset(
             csv_data_path=self.data_path,
@@ -110,14 +110,14 @@ class ImageDataModule(pl.LightningDataModule):
             label_name=self.modality_col,
             target_class_col=self.target_class_col,
             path_col=self.path_col,
-            remove_small_classes=remove_small_classes)
+            remove_small=remove_small)
 
         return DataLoader(dataset=val_dataset,
                           batch_size=self.batch_size,
                           shuffle=False,
                           num_workers=self.num_workers)
 
-    def test_dataloader(self, remove_small_classes=True):
+    def test_dataloader(self, remove_small=True):
 
         test_dataset = ImageDataset(
             csv_data_path=self.data_path,
@@ -128,7 +128,7 @@ class ImageDataModule(pl.LightningDataModule):
             label_name=self.modality_col,
             target_class_col=self.target_class_col,
             path_col=self.path_col,
-            remove_small_classes=True)
+            remove_small=remove_small_classes)
 
         return DataLoader(dataset=test_dataset,
                           batch_size=self.batch_size,

@@ -255,7 +255,7 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
                             modality_col     = label_col,
                             path_col         ='img_path',
                             shuffle_train    = False, # Not Shuffling Train
-                            remove_small_classes=False) 
+                            remove_small     = False) 
     dm.prepare_data()
     dm.setup()    
 
@@ -263,9 +263,9 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
     df_val = df[df['split_set']=='VAL'].reset_index(drop = True)
     df_test = df[df['split_set']=='TEST'].reset_index(drop = True)
     fe_model = model.feature_extraction()
-    train_dataloader = dm.train_dataloader(remove_small_classes=False)
-    val_dataloader   = dm.val_dataloader(remove_small_classes=False)
-    test_dataloader  = dm.test_dataloader(remove_small_classes=False)
+    train_dataloader = dm.train_dataloader(remove_small=False)
+    val_dataloader   = dm.val_dataloader(remove_small=False)
+    test_dataloader  = dm.test_dataloader(remove_small=False)
 
     df_train['features'] = list(extract_features(fe_model, train_dataloader))
     df_val['features'] = list(extract_features(fe_model, val_dataloader))
