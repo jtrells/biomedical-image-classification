@@ -27,7 +27,8 @@ class ImageDataModule(pl.LightningDataModule):
                  caption_col='CAPTION',
                  modality_col='MODALITY',
                  path_col='PATH',
-                 shuffle_train=True):
+                 shuffle_train=True,
+                 remove_small_classes=True):
         super().__init__()
         self.batch_size = batch_size
         self.data_path = data_path
@@ -42,6 +43,7 @@ class ImageDataModule(pl.LightningDataModule):
         self.image_transforms_valid = image_transforms[1]
         self.image_transforms_test = image_transforms[2]
         self.shuffle_train = shuffle_train
+        self.remove_small_classes = remove_small_classes
 
     def prepare_data(self):
         path = Path(self.data_path)
@@ -49,7 +51,8 @@ class ImageDataModule(pl.LightningDataModule):
             self.df = pd.read_csv(self.data_path, sep='\t')
         else:
             self.df = pd.read_parquet(self.data_path)
-            self.df = remove_small_classes(self.df, self.modality_col, threshold=100)
+            if self.remove_small_classes:
+                self.df = remove_small_classes(self.df, self.modality_col, threshold=100)
         # Always run the prepare data in order to get the same results in training
 
     def set_seed(self):

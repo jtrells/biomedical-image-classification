@@ -254,7 +254,8 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
                             target_class_col ='split_set',
                             modality_col     = label_col,
                             path_col         ='img_path',
-                            shuffle_train    = False) # Not Shuffling Train
+                            shuffle_train    = False, # Not Shuffling Train
+                            remove_small_classes=False) 
     dm.prepare_data()
     dm.setup()    
 
