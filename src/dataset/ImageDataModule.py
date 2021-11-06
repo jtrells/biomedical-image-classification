@@ -128,7 +128,7 @@ class ImageDataModule(pl.LightningDataModule):
             label_name=self.modality_col,
             target_class_col=self.target_class_col,
             path_col=self.path_col,
-            remove_small=remove_small_classes)
+            remove_small=remove_small)
 
         return DataLoader(dataset=test_dataset,
                           batch_size=self.batch_size,
