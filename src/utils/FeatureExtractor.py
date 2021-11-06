@@ -239,11 +239,12 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
     df_reduced = remove_small_classes(df, label_col, threshold=100)
 
     # check if we need to discard labels due to insufficient training samples
+    label_encoder, _ = label_encoder_target(df,target_col=label_col)
     if df.shape != df_reduced.shape:
-        label_encoder, _ = label_encoder_target(df_reduced,target_col=label_col)
+        label_encoder_pred, _ = label_encoder_target(df_reduced,target_col=label_col)
     else:
-        label_encoder, _ = label_encoder_target(df,target_col=label_col)
-    print("classes", label_encoder.classes_)
+        label_encoder_pred, _ = label_encoder_target(df,target_col=label_col)
+    print("classes", label_encoder_pred.classes_)
 
 
     transform = [transforms.ToPILImage(),
@@ -284,13 +285,13 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
     val_preds, val_probs = predict2(model, val_dataloader)
     test_preds, test_probs = predict2(model, test_dataloader)
 
-    df_train['prediction'] = label_encoder.inverse_transform(train_preds)
+    df_train['prediction'] = label_encoder_pred.inverse_transform(train_preds)
     df_train['pred_probs'] = train_probs
 
-    df_val['prediction'] = label_encoder.inverse_transform(val_preds)
+    df_val['prediction'] = label_encoder_pred.inverse_transform(val_preds)
     df_val['pred_probs'] = val_probs
 
-    df_test['prediction'] = label_encoder.inverse_transform(test_preds)
+    df_test['prediction'] = label_encoder_pred.inverse_transform(test_preds)
     df_test['pred_probs'] = test_probs
 
     df = pd.concat([df_train, df_val, df_test], sort=False)
