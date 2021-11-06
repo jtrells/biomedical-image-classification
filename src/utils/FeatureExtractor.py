@@ -240,9 +240,9 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
 
     # check if we need to discard labels due to insufficient training samples
     if df.shape != df_reduced.shape:
-        label_encoder, _ = label_encoder_target(df,target_col=label_col)
-    else:
         label_encoder, _ = label_encoder_target(df_reduced,target_col=label_col)
+    else:
+        label_encoder, _ = label_encoder_target(df,target_col=label_col)
 
 
     transform = [transforms.ToPILImage(),
