@@ -9,7 +9,10 @@ from .ImageDataset import ImageDataset
 from sklearn.utils import class_weight
 from pytorch_lightning import Trainer, seed_everything
 from pathlib import Path
-from ..utils.datasets import remove_small_classes
+
+import sys
+sys.path.append("..") 
+from utils.datasets import remove_small_classes
 
 class ImageDataModule(pl.LightningDataModule):
     def __init__(self,

@@ -4,7 +4,10 @@ from pathlib import Path
 from skimage import io
 from skimage.color import gray2rgb
 from pathlib import Path
-from ..utils.datasets import remove_small_classes
+
+import sys
+sys.path.append("..") 
+from utils.datasets import remove_small_classes
 
 
 class ImageDataset(torch.utils.data.Dataset): 
