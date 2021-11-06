@@ -3,6 +3,13 @@ from pandas import read_csv
 from os import path, read
 from iterstrat.ml_stratifiers import MultilabelStratifiedKFold
 
+def remove_small_classes(df, target_col, threshold=100):
+    gb = df.groupby(target_col)[target_col].count()
+    to_remove = []
+    for label in gb.index:
+        if gb[label] < threshold:
+            to_remove.append(label)
+    return df[~df.label.isin(to_remove)]
 
 def stratify(df, label_cols=['label', 'source'], n_splits=5):
     mskf = MultilabelStratifiedKFold(n_splits=n_splits, shuffle=False)

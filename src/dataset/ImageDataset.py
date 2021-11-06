@@ -4,6 +4,7 @@ from pathlib import Path
 from skimage import io
 from skimage.color import gray2rgb
 from pathlib import Path
+from ..utils.datasets import remove_small_classes
 
 
 class ImageDataset(torch.utils.data.Dataset): 
@@ -32,6 +33,8 @@ class ImageDataset(torch.utils.data.Dataset):
             self.df = pd.read_csv(csv_data_path, sep='\t')
         else:
             self.df = pd.read_parquet(csv_data_path)
+        self.df = remove_small_classes(self.df, label_name, threshold=100)
+
         if type(data_set) == str:
             self.df = self.df[self.df[target_class_col] == data_set]
         else:

@@ -9,7 +9,7 @@ from .ImageDataset import ImageDataset
 from sklearn.utils import class_weight
 from pytorch_lightning import Trainer, seed_everything
 from pathlib import Path
-
+from ..utils.datasets import remove_small_classes
 
 class ImageDataModule(pl.LightningDataModule):
     def __init__(self,
@@ -46,16 +46,8 @@ class ImageDataModule(pl.LightningDataModule):
             self.df = pd.read_csv(self.data_path, sep='\t')
         else:
             self.df = pd.read_parquet(self.data_path)
-            self.df = self.remove_small_classes(self.df)
+            self.df = remove_small_classes(self.df, self.modality_col, threshold=100)
         # Always run the prepare data in order to get the same results in training
-
-    def remove_small_classes(self, df):
-        gb = df.groupby(self.modality_col)[self.modality_col].count()
-        to_remove = []
-        for label in gb.index:
-            if gb[label] < 50:
-                to_remove.append(label)
-        return df[~df.label.isin(to_remove)]
 
     def set_seed(self):
         seed_everything(self.seed)
