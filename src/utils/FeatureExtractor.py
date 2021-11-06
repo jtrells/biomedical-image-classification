@@ -20,6 +20,7 @@ from dataset.ImageDataset import ImageDataset, EvalImageDataset
 from torch.utils.data import DataLoader
 from pathlib import Path
 from utils.label_encoder import label_encoder_target
+from utils.datasets import remove_small_classes
 import torch.nn.functional as nnf
 
 def get_vector_representation(data_loader, model, device):
@@ -234,8 +235,15 @@ def extract_features(fe_model, dataloader):
 
 
 def update_features(model, parquet_path, base_img_dir, label_col='label', seed=42, batch_size=32, num_workers=16):    
-    df        = pd.read_parquet(parquet_path)
-    label_encoder, _ = label_encoder_target(df,target_col=label_col)
+    df         = pd.read_parquet(parquet_path)
+    df_reduced = remove_small_classes(df, label_col, threshold=100)
+
+    # check if we need to discard labels due to insufficient training samples
+    if df.shape != df_reduced.shape:
+        label_encoder, _ = label_encoder_target(df,target_col=label_col)
+    else:
+        label_encoder, _ = label_encoder_target(df_reduced,target_col=label_col)
+
 
     transform = [transforms.ToPILImage(),
                 transforms.Resize((224, 224)),
