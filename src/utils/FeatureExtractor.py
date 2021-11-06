@@ -243,6 +243,7 @@ def update_features(model, parquet_path, base_img_dir, label_col='label', seed=4
         label_encoder, _ = label_encoder_target(df_reduced,target_col=label_col)
     else:
         label_encoder, _ = label_encoder_target(df,target_col=label_col)
+    print("classes", label_encoder.classes_)
 
 
     transform = [transforms.ToPILImage(),
