@@ -8,6 +8,9 @@ from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
 
 
+UNLABELED = 'unl'
+
+
 def extract_and_update_features(model_path, parquet_path, base_img_dir, label_col='label', batch_size=32, num_workers=16):
     model = ResNetClass.load_from_checkpoint(model_path)
 
@@ -47,9 +50,11 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     embeddings = reduce_dimensions(
         features, reducer_name, num_dimensions=num_dimensions)
 
-    # not reading from dataframe due to unlabeled elements
-    labels = classifier_info['labels']
+    # prepare for unlabeled data
+    labels = classifier_info['labels'].push(UNLABELED)
     le = LabelEncoder().fit(labels)
+    df[label_col] = df[label_col].fillna(UNLABELED)
+
     # get the neighborhood hit in feature space
     n_hits = calc_neighborhood_hit(
         df, features, le, n_neighbors=6, label_col=label_col) if add_hits else None
