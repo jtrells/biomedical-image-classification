@@ -51,7 +51,7 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
         features, reducer_name, num_dimensions=num_dimensions)
 
     # prepare for unlabeled data
-    labels = classifier_info['labels'].push(UNLABELED)
+    labels = classifier_info['labels'].append(UNLABELED)
     le = LabelEncoder().fit(labels)
     df[label_col] = df[label_col].fillna(UNLABELED)
 
