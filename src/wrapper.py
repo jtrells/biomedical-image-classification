@@ -46,7 +46,10 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
 
     embeddings = reduce_dimensions(
         features, reducer_name, num_dimensions=num_dimensions)
-    le = LabelEncoder().fit(df[label_col].unique())
+
+    # not reading from dataframe due to unlabeled elements
+    labels = classifier_info['labels']
+    le = LabelEncoder().fit(labels)
     # get the neighborhood hit in feature space
     n_hits = calc_neighborhood_hit(
         df, features, le, n_neighbors=6, label_col=label_col) if add_hits else None
@@ -72,7 +75,8 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
                                           "height_x": "height",
                                           "label_y": "full_label"})
     merged_df['orig_full_label'] = merged_df['full_label']
-    merged_df['pred_probs'] = df.apply(lambda x: x['pred_probs'].round(4), axis=1)
+    merged_df['pred_probs'] = df.apply(
+        lambda x: x['pred_probs'].round(4), axis=1)
     return merged_df
 
 
@@ -135,12 +139,12 @@ def delete_images(db, images):
     for image in images:
         db.images.replace_one({"img_path": image['img_path']},
                               {
-                                  "action": "delete", 
+                                  "action": "delete",
                                   "img_path": image['img_path'],
                                   "label": image['label'],
                                   "prediction": image['prediction'],
                                   "original_label": image['label']
-                               }, upsert=True)
+        }, upsert=True)
     return len(images)
 
 
