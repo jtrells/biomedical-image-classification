@@ -80,6 +80,7 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
                                           "width_x": "width",
                                           "height_x": "height",
                                           "label_y": "full_label"})
+    merged_df['full_label'] = merged_df['full_label'].fillna(UNLABELED)
     merged_df['orig_full_label'] = merged_df['full_label']
     merged_df['pred_probs'] = df.apply(
         lambda x: x['pred_probs'].round(4), axis=1)
