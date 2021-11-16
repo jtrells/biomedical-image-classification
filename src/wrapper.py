@@ -57,8 +57,11 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     df[label_col] = df[label_col].fillna(UNLABELED)
 
     # get the neighborhood hit in feature space
+    df_pseudo = df.copy()
+    df_pseudo[label_col] = df.apply(
+        lambda x: x['prediction'] if x[label_col] == UNLABELED else x[label_col], axis=1)
     n_hits = calc_neighborhood_hit(
-        df, features, le, n_neighbors=6, label_col=label_col) if add_hits else None
+        df_pseudo, features, le, n_neighbors=6, label_col=label_col) if add_hits else None
 
     df['x'] = embeddings[:, 0]
     df['y'] = embeddings[:, 1]
