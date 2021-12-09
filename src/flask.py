@@ -51,12 +51,12 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
              "source", "orig_full_label", "pred_probs", "ms_metric", "prob"]]
     df_as_json = df.to_dict(orient="records")
 
-    return jsonify({
-        "data": df_as_json,
-        "minProb": int(min(df.prob.values)),
-        "sources": df.source.unique().tolist(),
-        "predLabels": df.prediction.unique().tolist(),
-    })
+    return jsonify(
+        data=df_as_json,
+        minProb=int(min(df.prob.values)),
+        sources=df.source.unique().tolist(),
+        predLabels=df.prediction.unique().tolist(),
+    )
 
 
 def merge_dfs(df1, df2):
