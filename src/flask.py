@@ -50,13 +50,19 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
              "label", "prediction", "width", "height", "full_label", "caption",
              "source", "orig_full_label", "pred_probs", "ms_metric", "prob"]]
     df['ms_metric'] = df['ms_metric'].fillna(-1)
+
+    pred_labels = df.prediction.unique().tolist()
+    for pred_label in pred_labels:
+        df[f'fpred{pred_label}'] = df.apply(
+            lambda x: x.prob if x.prediction == pred_label else 0, axis=1)
+
     df_as_json = df.to_dict(orient="records")
 
     return jsonify(
         data=df_as_json,
         minProb=int(min(df.prob.values)),
         sources=df.source.unique().tolist(),
-        predLabels=df.prediction.unique().tolist(),
+        predLabels=pred_labels,
     )
 
 
