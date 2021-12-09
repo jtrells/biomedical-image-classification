@@ -23,7 +23,7 @@ def extract_and_update_features(model_path, parquet_path, base_img_dir, label_co
     #     return False, e
 
 
-def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='all', num_dimensions=2, add_hits=True, label_col='label'):
+def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest', subset='ALL', num_dimensions=2, add_hits=True, label_col='label'):
     # num_dimensions should be bigger than 1
     if (version == 'latest'):
         cursor = db.classifiers.find(
@@ -42,9 +42,16 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     df = pd.read_parquet(parquet_path)
 
     # if aiming for a subset, reduce the dataframe
-    subset = None if subset == 'all' else subset
+    subset = None if subset == 'ALL' else subset
     if subset != None:
-        df = df[df[subset_col] == subset].reset_index(drop=True)
+        if subset == 'TRAIN+UNLABELED':
+            df1 = df[df[subset_col] == 'TRAIN'].reset_index(drop=True)
+            df2 = df[df[subset_col] == 'UNL'].reset_index(drop=True)
+            df = pd.concat([df1, df2]).reset_index(drop=True)
+        elif subset == 'UNLABELED':
+            df = df[df[subset_col] == subset].reset_index(drop=True)
+        else:
+            df = df[df[subset_col] == 'UNL'].reset_index(drop=True)
     features = vstack(df.features.values)
 
     embeddings = reduce_dimensions(
