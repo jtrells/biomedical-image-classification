@@ -55,8 +55,6 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
             df = df[df[subset_col] == subset].reset_index(drop=True)
     features = vstack(df.features.values)
 
-    # check for NaNs
-    df = df[~df.pred_probs.isna()]
     embeddings = reduce_dimensions(
         features, reducer_name, num_dimensions=num_dimensions)
 
@@ -96,7 +94,7 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
                                           "label_y": "full_label"})
     merged_df['full_label'] = merged_df['full_label'].fillna(UNLABELED)
     merged_df['orig_full_label'] = merged_df['full_label']
-    merged_df['pred_probs'] = df.apply(
+    merged_df['pred_probs'] = merged_df.apply(
         lambda x: x['pred_probs'].round(4).tolist(), axis=1)
     return merged_df
 
