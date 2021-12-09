@@ -49,9 +49,9 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
             df2 = df[df[subset_col] == 'UNL'].reset_index(drop=True)
             df = pd.concat([df1, df2]).reset_index(drop=True)
         elif subset == 'UNLABELED':
-            df = df[df[subset_col] == subset].reset_index(drop=True)
-        else:
             df = df[df[subset_col] == 'UNL'].reset_index(drop=True)
+        else:
+            df = df[df[subset_col] == subset].reset_index(drop=True)
     features = vstack(df.features.values)
 
     embeddings = reduce_dimensions(
