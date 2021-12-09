@@ -55,6 +55,8 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
             df = df[df[subset_col] == subset].reset_index(drop=True)
     features = vstack(df.features.values)
 
+    # check for NaNs
+    df = df[~df.pred_probs.isna()]
     embeddings = reduce_dimensions(
         features, reducer_name, num_dimensions=num_dimensions)
 
