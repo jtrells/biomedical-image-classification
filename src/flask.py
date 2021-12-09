@@ -49,9 +49,10 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
     df = df[["img", "img_path", "x", "y", "hits",
              "label", "prediction", "width", "height", "full_label", "caption",
              "source", "orig_full_label", "pred_probs", "ms_metric", "prob"]]
+    df_as_json = df.to_dict(orient="records")
 
     return {
-        "data": df.to_json(orient="records"),
+        "data": df_as_json,
         "minProb": int(min(df.prob.values)),
         "sources": df.source.unique().tolist(),
         "predLabels": df.prediction.unique().tolist(),
