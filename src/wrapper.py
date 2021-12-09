@@ -6,6 +6,7 @@ from utils.dimensionality_reduction import reduce_dimensions, calc_neighborhood_
 from models.ResNetClass import ResNetClass
 from pathlib import Path
 from sklearn.preprocessing import LabelEncoder
+from math import ceil
 
 
 UNLABELED = 'unl'
@@ -73,6 +74,7 @@ def get_data(db, vil_path, taxonomy, classifier, reducer_name, version='latest',
     df['x'] = embeddings[:, 0]
     df['y'] = embeddings[:, 1]
     df['hits'] = vstack(n_hits)
+    df['prob'] = df.apply(lambda x: ceil(max(x.pred_probs) * 100), axis=1)
 
     if num_dimensions > 2:
         print("dimensions > 2 but only retrieving the first three dimensions")

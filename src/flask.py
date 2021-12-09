@@ -49,7 +49,12 @@ def fetch_reduced_image_features(taxonomy, classifier, projection, version, subs
     df = df[["img", "img_path", "x", "y", "hits",
              "label", "prediction", "width", "height", "full_label", "caption", "source", "orig_full_label", "pred_probs", "ms_metric"]]
 
-    return df.to_json(orient="records")
+    return {
+        "data": df.to_json(orient="records"),
+        "minProb": min(df.probs.values),
+        "sources": df.sources.unique(),
+        "predLabels": df.prediction.unique(),
+    }
 
 
 def merge_dfs(df1, df2):
