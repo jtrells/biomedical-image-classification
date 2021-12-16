@@ -1,0 +1,12 @@
+# serve static images from /mnt
+
+server {
+       listen 7010;
+       listen [::]:7010;
+
+       server_name unlabeled.com;
+
+       location / {
+           root /mnt/images;
+       }
+}
