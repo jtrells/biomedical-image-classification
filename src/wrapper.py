@@ -149,7 +149,11 @@ def get_active_classifiers(db, taxonomy):
             'classifier': c['classifier'],
             'version': c['version'],
             'active': c['active'],
-            'labels': labels
+            'labels': labels,
+            'validF1': c['valid_f1'],
+            'validAcc': c['valid_acc'],
+            'testF1': c['test_f1'],
+            'testAcc': c['test_acc'],
         })
     return classifiers
 
